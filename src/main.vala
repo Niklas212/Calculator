@@ -47,34 +47,53 @@ protected override void activate()
 
 
 
-	var con=config(){use_degrees=settings.get_boolean("use-degrees"),round_decimal=settings.get_boolean("show-all"),decimal_digit=settings.get_int("decimal-digits")};
+	var con=config(){
+	        use_degrees=settings.get_boolean("use-degrees"),
+	        round_decimal=!(settings.get_boolean("show-all")),
+	        decimal_digit=settings.get_int("decimal-digits")};
+
+	    Placeholder save=()=>{
+        int width,height,pos_x,pos_y;
+
+        window.get_size(out width,out height);
+        window.get_position(out pos_x, out pos_y);
+
+        settings.set_int("win-width",width);
+        settings.set_int("win-height",height);
+        settings.set_int("pos-x",pos_x);
+        settings.set_int("pos-y",pos_y);
+        settings.set_boolean("use-degrees",con.use_degrees);
+        settings.set_boolean("show-all",!(con.round_decimal));
+        settings.set_int("decimal-digits",con.decimal_digit);
+    };
+
 
 	var ground= new Grid();
     ground.column_spacing=8;
     ground.row_spacing=8;
 
 
-    var deg_rad=new ToggleButton.with_label(((settings.get_boolean("use-degrees"))?"Degree":"Radian"));
-        deg_rad.set_active(settings.get_boolean("use-degrees"));
+    var deg_rad=new ToggleButton.with_label(((con.use_degrees)?"Degree":"Radian"));
+        deg_rad.set_active(con.use_degrees);
         deg_rad.toggled.connect(()=>{
             deg_rad.label=(deg_rad.active)?"Degree":"Radian";
             con.use_degrees=!con.use_degrees;
         });
-    var btn_dig=new SpinButton.with_range(0,20,1);
-        btn_dig.value=settings.get_int("decimal-digits");
+    var btn_dig=new SpinButton.with_range(0,16,1);
+        btn_dig.value=con.decimal_digit;
         btn_dig.value_changed.connect(()=>{
             con.decimal_digit=(int)btn_dig.value;
         });
     var dig_text=new Label("Number of decimals");
 
     var dig_swi=new Switch();
-        dig_swi.state=settings.get_boolean("show-all");
+        dig_swi.state=!(con.round_decimal);
         dig_swi.halign=END;
 
-        btn_dig.set_sensitive(!(settings.get_boolean("show-all")));
-con.round_decimal=false;
+        btn_dig.set_sensitive(con.round_decimal);
+
         dig_swi.button_press_event.connect(()=>{
-            con.round_decimal=dig_swi.state;
+            con.round_decimal=!con.round_decimal;
             btn_dig.set_sensitive(dig_swi.state);
             return false;
         });
@@ -111,20 +130,6 @@ con.round_decimal=false;
     //header.pack_end(deg_rad);
     header.pack_end(menu_button);
 
-    Placeholder save=()=>{
-        int width,height,pos_x,pos_y;
-
-        window.get_size(out width,out height);
-        window.get_position(out pos_x, out pos_y);
-
-        settings.set_int("win-width",width);
-        settings.set_int("win-height",height);
-        settings.set_int("pos-x",pos_x);
-        settings.set_int("pos-y",pos_y);
-        settings.set_boolean("use-degrees",deg_rad.active);
-        settings.set_boolean("show-all",dig_swi.state);
-        settings.set_int("decimal-digits",(int)btn_dig.value);
-    };
 
     window.set_titlebar(header);
     window.border_width = 10;
