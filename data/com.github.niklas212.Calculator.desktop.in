@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=calculator
+Exec=calculator
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="calculator">
+	<schema id="com.github.niklas212.Calculator" path="/com/github/niklas212/Calculator/">
+	  <key name="pos-x" type="i">
+      <default>400</default>
+      <summary>horizontal position</summary>
+      <description>the horizontal position of the window</description>
+    </key>
+    <key name="pos-y" type="i">
+      <default>400</default>
+      <summary>vertical position</summary>
+      <description>the vertical position of the window</description>
+    </key>
+    <key name="win-width" type="i">
+      <default>500</default>
+      <summary>window width</summary>
+      <description>the width of the window</description>
+    </key>
+    <key name="win-height" type="i">
+      <default>300</default>
+      <summary>window height</summary>
+      <description>the height of the window</description>
+    </key>
+    <key name="use-degrees" type="b">
+      <default>true</default>
+      <summary>use degrees</summary>
+      <description>if degrees should be used instead of radians</description>
+    </key>
+    <key name="show-all" type="b">
+      <default>true</default>
+      <summary>show all decimal numbers</summary>
+      <description>show all decimal numbers</description>
+    </key>
+    <key name="decimal-digits" type="i">
+      <default>4</default>
+      <range min="0" max="20"/>
+      <summary>decimal digits</summary>
+      <description>the number of decimal digits which are shown</description>
+    </key>
+	</schema>
+</schemalist>

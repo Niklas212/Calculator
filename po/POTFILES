@@ -1,0 +1,7 @@
+data/com.github.niklas212.Calculator.desktop.in
+data/com.github.niklas212.Calculator.appdata.xml.in
+data/com.github.niklas212.Calculator.gschema.xml
+src/window.ui
+src/main.vala
+src/window.vala
+
