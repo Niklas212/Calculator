@@ -305,7 +305,43 @@ protected override void activate()
                         keys+=var_name.text;
                         values+=val??0;
                         con.custom_variable=Replaceable(){key=keys,value=values};
-                        box_var.add(var_entry(var_name.text,val.to_string(),text_exp));
+
+                        Widget entry= var_entry(var_name.text,val.to_string(),text_exp);
+                        entry.button_press_event.connect((event)=>{
+                            if(event.type == BUTTON_PRESS && event.button == 3) {
+                                var popov=new Popover(entry);
+
+                                var remove=new Button.with_label("remove");
+                                    remove.clicked.connect(()=>{
+                                        var key=con.custom_variable.key;
+                                        var value=con.custom_variable.value;
+                                        string[] nkey={};
+                                        double[] nvalue={};
+                                        int del_pos=1;
+                                        for(int i=0; i<key.length; i++) {
+                                            if(key[i]!=@"$(var_name.text)") {
+                                                nkey+=key[i];
+                                                nvalue+=value[i];
+                                            }
+                                            else
+                                                del_pos=i+1;
+                                        }
+                                        con.custom_variable=Replaceable(){key=nkey,value=nvalue};
+                                        var all_children=box_var.get_children();
+                                        var to_remove=all_children.nth_data(del_pos);
+                                        box_var.remove(to_remove);
+                                    });
+                                var box=new Box(VERTICAL,8);
+                                    box.margin=4;
+                                    box.pack_start(remove);
+                                    popov.add(box);
+
+                                    popov.show_all();
+                            }
+                            return false;
+                        });
+
+                        box_var.add(entry);
                         box_var.show_all();
                     }
                     else {
