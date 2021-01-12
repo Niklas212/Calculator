@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=calculator
 Exec=calculator
+Icon=accessories-calculator
 Terminal=false
 Type=Application
 Categories=GTK;
