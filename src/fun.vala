@@ -56,19 +56,19 @@ public bool valid_var(string key, string value,config c,out string message=null,
                 }
                 catch(Error e)
                 {
-                    message="invslid number or expression:"+e.message;
+                    message="invalid number or expression:"+e.message;
                     return false;
                 }
             }
             catch(Error e)
             {
-                    message="invslid number or expression:"+e.message;
+                    message="invalid number or expression:"+e.message;
                 return false;
             }
         }
         catch(Error e)
         {
-                    message="invslid number or expression:"+e.message;
+                    message="invalid number or expression:"+e.message;
             return false;
         }
 
@@ -89,4 +89,73 @@ public bool valid_var(string key, string value,config c,out string message=null,
     return true;
 }
 
+public Replaceable remove_key(Replaceable rep, string key, out int pos) {
+
+    string[]keys={};
+    double[]values={};
+
+    for(int i=0; i<rep.key.length; i++) {
+        if(rep.key[i]==key) {
+            pos=i;
+        }
+        else {
+            keys+=rep.key[i];
+            values+=rep.value[i];
+        }
+    }
+    return Replaceable(){key=keys, value=values};
+}
+
+public double[] get_values(string v) {
+    string last="";
+    double[]ret={};
+
+    for(int i=0; i<v.length; i++) {
+        if(v[i]==' ') {
+            if(last.length>0) {
+                ret+=double.parse(last);
+                last="";
+            }
+        }
+        else {
+            last+=v[i].to_string();
+        }
+    }
+
+    return ret;
+}
+
+public string[] get_keys(string v) {
+    string last="";
+    string[] ret={};
+
+    for(int i=0; i<v.length; i++) {
+        if(v[i]==' ') {
+            if(last.length>0) {
+                ret+=last;
+                last="";
+            }
+        }
+        else {
+            last+=v[i].to_string();
+        }
+    }
+    return ret;
+}
+
+public string set_values(double[] v) {
+    string ret="";
+    foreach(double value in v) {
+        ret+=value.to_string()+" ";
+    }
+    return ret;
+}
+
+public string set_keys(string[] k) {
+    string ret="";
+    foreach(string key in k) {
+        ret+=key+" ";
+    }
+    return ret;
+}
 

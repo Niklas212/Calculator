@@ -50,7 +50,9 @@ protected override void activate()
 	var con=config(){
 	        use_degrees=settings.get_boolean("use-degrees"),
 	        round_decimal=!(settings.get_boolean("show-all")),
-	        decimal_digit=settings.get_int("decimal-digits")};
+	        decimal_digit=settings.get_int("decimal-digits"),
+	        custom_variable=Replaceable(){key=get_keys(settings.get_string("var-keys")), value=get_values(settings.get_string("var-values"))}
+	        };
 
 	    Placeholder save=()=>{
         int width,height,pos_x,pos_y;
@@ -65,6 +67,8 @@ protected override void activate()
         settings.set_boolean("use-degrees",con.use_degrees);
         settings.set_boolean("show-all",!(con.round_decimal));
         settings.set_int("decimal-digits",con.decimal_digit);
+        settings.set_string("var-keys",set_keys(con.custom_variable.key));
+        settings.set_string("var-values",set_values(con.custom_variable.value));
     };
 
 
@@ -127,7 +131,7 @@ protected override void activate()
     var header=new HeaderBar();
     header.show_close_button =true;
     header.title="Calculator";
-    //header.pack_end(deg_rad);
+    header.has_subtitle=false;
     header.pack_end(menu_button);
 
 
@@ -366,8 +370,23 @@ protected override void activate()
 //
 //
 //
-
     box_var.add(btn_add_var);
+
+    for(int i=0; i<con.custom_variable.key.length; i++) {
+                var cus_var=new VarEntry();
+
+                    cus_var.remove_clicked.connect((ac_key)=>{
+                        int pos=0;
+                        con.custom_variable=remove_key(con.custom_variable,ac_key,out pos);
+                        var all_children=box_var.get_children();
+                        var to_remove=all_children.nth_data(pos+1);
+                        box_var.remove(to_remove);
+                    });
+                box_var.add(cus_var.show(con.custom_variable.key[i], con.custom_variable.value[i].to_string(), text_exp));
+            }
+            box_var.show_all();
+
+
 
     ground.attach(box_var,0,2,9);
 
