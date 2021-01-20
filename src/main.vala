@@ -45,8 +45,6 @@ protected override void activate()
 
     var settings=new GLib.Settings("com.github.niklas212.Calculator");
 
-
-
 	var con=config(){
 	        use_degrees=settings.get_boolean("use-degrees"),
 	        round_decimal=!(settings.get_boolean("show-all")),
@@ -88,7 +86,8 @@ protected override void activate()
         btn_dig.value_changed.connect(()=>{
             con.decimal_digit=(int)btn_dig.value;
         });
-    var dig_text=new Label("Number of decimals");
+    var dig_text=new Label("");
+        dig_text.set_markup("<b>Number of decimals</b>");
 
     var dig_swi=new Switch();
         dig_swi.state=!(con.round_decimal);
@@ -274,98 +273,34 @@ protected override void activate()
 //
 //
         btn_add_var.clicked.connect(()=>{
-            var btn_a=new Button.with_label("apply");
-                btn_a.get_style_context().add_class("suggested-action");
-                btn_a.margin=8;
+            var add_variable_dialog=new AddVariableDialog();
+                add_variable_dialog.apply.connect((key,value)=>{
+                    string error_mess="";
+                    double d_value;
+                    if(valid_var(key,value,con, out error_mess, out d_value)) {
+                        string[] keys=con.custom_variable.key;
+                        double[] values=con.custom_variable.value;
+                        keys+=key;
+                        values+=d_value;
+                        con.custom_variable=Replaceable(){key=keys, value=values};
 
-            var var_name=new Entry();
-                var_name.margin=8;
-                var_name.input_purpose=ALPHA;
-                var_name.placeholder_text="name";
+                        var cus_var=new VarEntry();
+                            cus_var.remove_clicked.connect((ac_key)=>{
+                            int pos=0;
+                        con.custom_variable=remove_key(con.custom_variable,ac_key,out pos);
+                        var all_children=box_var.get_children();
+                        //pos+1 cause add_variable button
+                        var to_remove=all_children.nth_data(pos+1);
+                        box_var.remove(to_remove);
+                            });
 
-            var var_value=new Entry();
-                var_value.margin=8;
-                var_value.input_purpose=NUMBER;
-                var_value.placeholder_text="value";
-
-            var show_mess=new Label("");
-
-            var dia_add_var= new Dialog.with_buttons("Add a variable",window,DESTROY_WITH_PARENT);
-            dia_add_var.get_content_area().margin=8;
-            dia_add_var.get_content_area().add(add_label(var_name,"name of the variable"));
-            dia_add_var.get_content_area().add(add_label(var_value,"value of the variable"));
-            dia_add_var.get_content_area().add(show_mess);
-            dia_add_var.get_action_area().add(btn_a);
-
-            string error_mess="";
-            double? val=null;
-
-            Placeholder func=()=>{
-                    if(valid_var(var_name.text,var_value.text,con,out error_mess,out val)) {
-                        dia_add_var.hide();
-                        var rep=con.custom_variable;
-                        var keys=rep.key;
-                        var values=rep.value;
-                        keys+=var_name.text;
-                        values+=val??0;
-                        con.custom_variable=Replaceable(){key=keys,value=values};
-
-                        Widget entry= var_entry(var_name.text,val.to_string(),text_exp);
-                        entry.button_press_event.connect((event)=>{
-                            if(event.type == BUTTON_PRESS && event.button == 3) {
-                                var popov=new Popover(entry);
-
-                                var remove=new Button.with_label("remove");
-                                    remove.clicked.connect(()=>{
-                                        var key=con.custom_variable.key;
-                                        var value=con.custom_variable.value;
-                                        string[] nkey={};
-                                        double[] nvalue={};
-                                        int del_pos=1;
-                                        for(int i=0; i<key.length; i++) {
-                                            if(key[i]!=@"$(var_name.text)") {
-                                                nkey+=key[i];
-                                                nvalue+=value[i];
-                                            }
-                                            else
-                                                del_pos=i+1;
-                                        }
-                                        con.custom_variable=Replaceable(){key=nkey,value=nvalue};
-                                        var all_children=box_var.get_children();
-                                        var to_remove=all_children.nth_data(del_pos);
-                                        box_var.remove(to_remove);
-                                    });
-                                var box=new Box(VERTICAL,8);
-                                    box.margin=4;
-                                    box.pack_start(remove);
-                                    popov.add(box);
-
-                                    popov.show_all();
-                            }
-                            return false;
-                        });
-
-                        box_var.add(entry);
+                        box_var.add(cus_var.show(key,value,text_exp));
                         box_var.show_all();
                     }
-                    else {
-                        show_mess.set_markup(@"<span foreground=\"red\">$error_mess</span>");
-                    }
-            };
 
-            var_name.activate.connect(()=>{
-                var_value.grab_focus();
-            });
-
-            var_value.activate.connect(()=>{
-                func();
-            });
-
-            btn_a.clicked.connect(()=>{
-                    func();
+                    return error_mess??"";
                 });
-
-            dia_add_var.show_all();
+                add_variable_dialog.show(window);
         });
 //
 //

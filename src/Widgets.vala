@@ -1,5 +1,6 @@
 namespace Custom_Widget{
 using Gtk;
+
     public Button calc_button(string text,bool default_function,Entry? wdg=null,string? c_t=null)
     {
         var btn=new Button.with_label(c_t??text);
@@ -16,6 +17,7 @@ using Gtk;
         btn.can_focus=false;
         return btn;
     }
+
     public Widget add_label(Widget wdg, string text, int space=8)
     {
         var stor=new Box(HORIZONTAL,space);
@@ -33,7 +35,7 @@ using Gtk;
         return e;
     }
 
-public class VarEntry{
+    public class VarEntry{
     public signal void remove_clicked(string akey);
 
     public Widget show(string key, string value, Entry ent) {
@@ -42,7 +44,7 @@ public class VarEntry{
         widget.button_press_event.connect((event)=>{
             if(event.type == BUTTON_PRESS && event.button == 3) {
                 var pop=new Popover(widget);
-                pop.margin=8;
+                //pop.margin=8;
 
         var remove=new Button.with_label("remove");
 
@@ -52,6 +54,7 @@ public class VarEntry{
             });
 
         var pop_box=new Box(VERTICAL,8);
+            pop_box.pack_start((new Label(@"$key ($value)")));
             pop_box.pack_start(remove);
             pop_box.margin=4;
             pop_box.show_all();
@@ -63,5 +66,60 @@ public class VarEntry{
         });
         return widget;
     }
+    }
+
+    public class AddVariableDialog{
+    public signal string apply(string key, string value);
+
+    public Dialog show(ApplicationWindow window) {
+        var dialog=new Dialog.with_buttons("Add a variable",window,DESTROY_WITH_PARENT);
+        dialog.get_content_area().margin=8;
+
+        var btn_a=new Button.with_label("apply");
+                btn_a.get_style_context().add_class("suggested-action");
+                btn_a.margin=8;
+
+        var var_name=new Entry();
+                var_name.margin=8;
+                var_name.input_purpose=ALPHA;
+                var_name.placeholder_text="name";
+
+        var var_value=new Entry();
+                var_value.margin=8;
+                var_value.input_purpose=NUMBER;
+                var_value.placeholder_text="value";
+
+        var show_mess=new Label("");
+
+        dialog.get_content_area().add(add_label(var_name,"name of the variable"));
+        dialog.get_content_area().add(add_label(var_value,"value of the variable"));
+        dialog.get_content_area().add(show_mess);
+        dialog.get_action_area().add(btn_a);
+
+        var_name.activate.connect(()=>{
+            var_value.grab_focus();
+        });
+
+        var_value.activate.connect(()=>{
+            string mess=apply(var_name.text, var_value.text);
+            if(mess!=""&&mess!=null) {
+                show_mess.set_markup(@"<span foreground=\"red\">$mess</span>");
+            }
+            else dialog.hide();
+        });
+
+        btn_a.clicked.connect(()=>{
+            string mess=apply(var_name.text, var_value.text);
+            if(mess!=""&&mess!=null) {
+                show_mess.set_markup(@"<span foreground=\"red\">$mess</span>");
+            }
+            else dialog.hide();
+        });
+
+        dialog.show_all();
+        return dialog;
+    }
+    }
+
 }
-}
+
