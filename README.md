@@ -3,7 +3,10 @@ this is a simple Calculator written in Gtk and Vala/Genie
 ### Installation
 This works only for Linux
 #### Dependencies
-
+[meson](https://mesonbuild.com/Quick-guide.html)
+valac
+[gtk](https://www.gtk.org/docs/installations/)
+a c compiler
 1. clone this repository
 2. change the directionary to this folder
 3. create a build folder through running ```meson build --prefix=/usr``` in the terminal
