@@ -188,6 +188,7 @@ protected override void activate()
         } catch (Error e) {
             evaluation.clear();
             text_hexp.set_markup(@"<span foreground=\"red\">$(e.message)</span>");
+            text_result.label="";
         }
 
     };
