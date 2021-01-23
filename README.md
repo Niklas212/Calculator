@@ -1,5 +1,6 @@
 # Calculator
 this is a simple Calculator written in Gtk and Vala/Genie
+
 ### Installation
 This works only for Linux
 #### Dependencies
