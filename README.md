@@ -9,7 +9,7 @@ this is a simple Calculator written in Gtk and Vala/Genie
 - [gtk](https://www.gtk.org/docs/installations/)
 - a c compiler
 1. clone this repository
-2. change the directionary to this folder
-3. create a build folder through running ```meson build --prefix=/usr``` in the terminal
-4. change the directionary to the created build folder
-5. install through the ```sudo ninja install ``` command
+2. change the directory to this folder
+3. create a build folder: ```meson build --prefix=/usr``` in the terminal
+4. change the directory to the created build folder: ```cd build```
+5. install: ```sudo ninja install ```
