@@ -17,6 +17,7 @@
  */
 using Gtk;
 using Custom_Widget;
+using Calculation;
 
 public class Calculator:Gtk.Application {
 
@@ -51,6 +52,8 @@ protected override void activate()
 	        decimal_digit=settings.get_int("decimal-digits"),
 	        custom_variable=Replaceable(){key=get_keys(settings.get_string("var-keys")), value=get_values(settings.get_string("var-values"))}
 	        };
+
+ var evaluation=new Evaluation(con);
 
 	    Placeholder save=()=>{
         int width,height,pos_x,pos_y;
@@ -175,13 +178,26 @@ protected override void activate()
     ground.attach(text_exp,0,0,9);
     ground.attach(text_box,0,1,9);
 
+    Placeholder evaluate=()=>{
+        try {
+           double res=evaluation.eval_auto(text_exp.text, con);
+           text_hexp.label=text_exp.text;
+           text_exp.text=res.to_string();
+           text_exp.set_position(text_exp.text.length);
+           text_result.label=res.to_string();
+        } catch (Error e) {
+            text_hexp.set_markup(@"<span foreground=\"red\">$(e.message)</span>");
+        }
+
+    };
+
     var btn_f= calc_button("=",false);
         btn_f.get_style_context().add_class("suggested-action");
-        btn_f.clicked.connect(()=>{evaluate(text_exp,text_result,text_hexp,con);});
+        btn_f.clicked.connect(()=>{evaluate();});
 
     //enter button pressed
     text_exp.activate.connect(()=>{
-        evaluate(text_exp,text_result,text_hexp,con);
+        evaluate();
     });
 
     var btn_del=calc_button("⇐",false);
@@ -321,8 +337,12 @@ protected override void activate()
             }
             box_var.show_all();
 
-
-
+/*
+    var stack=new Notebook();
+        stack.show_border=false;
+        stack.enable_popup=true;
+        //stack.append_page(box_var,(new Label("variables")));
+*/
     ground.attach(box_var,0,2,9);
 
     window.add(ground);

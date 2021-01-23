@@ -6,7 +6,8 @@ public errordomain CALC_ERROR {
     MISSING_ARGUMENT,
     REMAINING_ARGUMENT,
     MISSING_CLOSING_BRACKET,
-    MISSING_OPENING_BRACKET
+    MISSING_OPENING_BRACKET,
+    UNKNOWN
     }
 
 
@@ -16,17 +17,22 @@ public class Evaluation:GLib.Object
 
     public Evaluation(config c=config(){use_degrees=true})
     {
+        this.update(c);
+    }
+
+    public void update(config c) {
         fun_intern=get_intern_functions(c.use_degrees);
         operator=get_operator();
         variable=get_custom_variable(c.custom_variable);
         con=c;
     }
+
     public config con;
 
 	private PreparePart[] parts={};
 	public string input{get; set; default="";}
 	public double? result{get; private set; default=null;}
-	public string? s_result{get; private set; default=null;}
+	//public string? s_result{get; private set; default=null;}
 	private GenericArray<Part?> section=new GenericArray<Part?>();
 	private GenericArray<Sequence?>sequence=new GenericArray<Sequence?>();
 
@@ -37,6 +43,12 @@ public class Evaluation:GLib.Object
     public Func fun_intern{get; set; }
 	public string[] control{get; set; default={"(",")",","," "};}
 	public Replaceable variable{get; set;}
+
+    public void clear(){
+        parts={};
+        section.remove_range(0,section.length);
+        sequence.remove_range(0,sequence.length);
+    }
 
 	public void split() throws CALC_ERROR
 	{
@@ -150,7 +162,6 @@ public class Evaluation:GLib.Object
 					bracket_value-=bracket;
 					else if(part.value=="(")
 					bracket_value+=bracket;
-
 					break;
 				}
 				default: {
@@ -248,12 +259,38 @@ public class Evaluation:GLib.Object
 			});
 		}
 		result=section.get(0).value??null;
-		s_result=result.to_string();
+		//s_result=result.to_string();
 		if(con.round_decimal) {
 		    result=round(result*pow(10,con.decimal_digit))/pow(10,con.decimal_digit);
-		    s_result=result.to_string();
+		    //s_result=result.to_string();
 	    }
 	}
+
+    public double eval_auto(string in,config? c=null) throws CALC_ERROR {
+        this.input=in;
+        if(c!=null)
+            this.update(c);
+        try{
+            this.split();
+            try{
+                this.prepare();
+                try{
+                    this.eval();
+                }
+                catch(Error e) {
+                    throw e;
+                }
+            }
+            catch(Error e) {
+                throw e;
+            }
+        }
+        catch(Error e) {
+            throw e;
+        }
+        this.clear();
+        return this.result;
+    }
 
 	private PreparePart get_longest(PreparePart x,...)
 	{
