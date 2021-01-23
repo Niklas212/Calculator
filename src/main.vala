@@ -181,10 +181,11 @@ protected override void activate()
     Placeholder evaluate=()=>{
         try {
            double res=evaluation.eval_auto(text_exp.text, con);
+           string sres=res.to_string().replace("e", "E");
            text_hexp.label=text_exp.text;
-           text_exp.text=res.to_string();
-           text_exp.set_position(text_exp.text.length);
-           text_result.label=res.to_string();
+           text_exp.text=sres;
+           text_exp.set_position(sres.length);
+           text_result.label=sres;
         } catch (Error e) {
             evaluation.clear();
             text_hexp.set_markup(@"<span foreground=\"red\">$(e.message)</span>");
