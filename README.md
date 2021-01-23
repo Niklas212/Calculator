@@ -2,7 +2,7 @@
 this is a simple Calculator written in Gtk and Vala/Genie
 ![Calculator](https://user-images.githubusercontent.com/76533424/105609872-6ed2d100-5dac-11eb-85f0-a635f22bf657.png)
 ### Installation
-This works only for Linux
+**This works only on Linux**
 #### Dependencies
 - [meson](https://mesonbuild.com/Quick-guide.html)
 - valac
