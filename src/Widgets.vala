@@ -39,7 +39,9 @@ using Gtk;
     public signal void remove_clicked(string akey);
 
     public Widget show(string key, string value, Entry ent) {
-        var widget=var_entry(key, value, ent);
+        var svalue=value.replace("e","E");
+
+        var widget=var_entry(key, svalue, ent);
 
         widget.button_press_event.connect((event)=>{
             if(event.type == BUTTON_PRESS && event.button == 3) {
@@ -54,7 +56,7 @@ using Gtk;
             });
 
         var pop_box=new Box(VERTICAL,8);
-            pop_box.pack_start((new Label(@"$key ($value)")));
+            pop_box.pack_start((new Label(@"$key ($svalue)")));
             pop_box.pack_start(remove);
             pop_box.margin=4;
             pop_box.show_all();
