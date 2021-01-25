@@ -222,7 +222,7 @@ protected override void activate()
     var btn_brc_op=calc_button("(",true,text_exp);
     var btn_brc_cl=calc_button(")",true,text_exp);
 
-    var btn_pi=calc_button("pi",true,text_exp,"π");
+    var btn_pi=calc_button("pi",true,text_exp,PopInfo(){show=true, definition="_"},"π");
     var btn_e=calc_button("e",true,text_exp);
 
 
@@ -260,21 +260,21 @@ protected override void activate()
      ground.attach(btn_clear,5,3);
 
 
-    ground.attach(calc_button("sin",true,text_exp),6,3);
-    ground.attach(calc_button("cos",true,text_exp),7,3);
-    ground.attach(calc_button("tan",true,text_exp),8,3);
+    ground.attach(calc_button("sin",true,text_exp,popinfo("_(x)")),6,3);
+    ground.attach(calc_button("cos",true,text_exp,popinfo("_(x)")),7,3);
+    ground.attach(calc_button("tan",true,text_exp,popinfo("_(x)")),8,3);
 
-    ground.attach(calc_button("sinh",true,text_exp),6,4);
-    ground.attach(calc_button("cosh",true,text_exp),7,4);
-    ground.attach(calc_button("tanh",true,text_exp),8,4);
+    ground.attach(calc_button("sinh",true,text_exp,popinfo("_(x)")),6,4);
+    ground.attach(calc_button("cosh",true,text_exp,popinfo("_(x)")),7,4);
+    ground.attach(calc_button("tanh",true,text_exp,popinfo("_(x)")),8,4);
 
-    ground.attach(calc_button("!",true,text_exp),6,5);
-    ground.attach(calc_button("E",true,text_exp),7,5);
-    ground.attach(calc_button("mod",true,text_exp),8,5);
+    ground.attach(calc_button("!",true,text_exp,popinfo("x_")),6,5);
+    ground.attach(calc_button("E",true,text_exp,popinfo("x_y")),7,5);
+    ground.attach(calc_button("mod",true,text_exp,popinfo("_(x, y)")),8,5);
 
-    ground.attach(calc_button("^",true,text_exp),6,6);
-    ground.attach(calc_button("sqrt",true,text_exp),7,6);
-    ground.attach(calc_button("root",true,text_exp),8,6);
+    ground.attach(calc_button("^",true,text_exp,popinfo("x_y")),6,6);
+    ground.attach(calc_button("sqrt",true,text_exp,popinfo("_(x)")),7,6);
+    ground.attach(calc_button("root",true,text_exp,popinfo("_(x, y)")),8,6);
 
     var btn_add_var=new Button.with_label("add a variable");
         btn_add_var.get_style_context().add_class("suggested-action");

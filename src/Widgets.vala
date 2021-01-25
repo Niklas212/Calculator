@@ -1,7 +1,7 @@
 namespace Custom_Widget{
 using Gtk;
 
-    public Button calc_button(string text,bool default_function,Entry? wdg=null,string? c_t=null)
+    public Button calc_button(string text,bool default_function,Entry? wdg=null, PopInfo info=PopInfo(), string? c_t=null)
     {
         var btn=new Button.with_label(c_t??text);
         if(default_function)
@@ -15,6 +15,14 @@ using Gtk;
             });
         }
         btn.can_focus=false;
+        if(info.show) {
+            if(info.custom_text) {
+                btn.set_tooltip_text(info.definition);
+            }
+            else {
+                btn.set_tooltip_text(info.definition.replace("_", text));
+            }
+        }
         return btn;
     }
 
@@ -28,9 +36,8 @@ using Gtk;
     }
 
     public Widget var_entry(string key,string value,Entry ent) {
-        var e=calc_button(key,true,ent);
+        var e=calc_button(key,true,ent,PopInfo(){show=true, definition=value});
         e.halign=START;
-        e.set_tooltip_text(value);
 
         return e;
     }

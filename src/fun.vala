@@ -106,3 +106,7 @@ public string set_keys(string[] k) {
     return ret;
 }
 
+public PopInfo popinfo(string def) {
+    return PopInfo(){show=true, definition=def};
+}
+
