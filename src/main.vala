@@ -98,7 +98,7 @@ protected override void activate()
 
         btn_dig.set_sensitive(con.round_decimal);
 
-        dig_swi.button_press_event.connect(()=>{
+        dig_swi.state_set.connect(()=>{
             con.round_decimal=!con.round_decimal;
             btn_dig.set_sensitive(dig_swi.state);
             return false;
@@ -128,6 +128,7 @@ protected override void activate()
 
     var menu_button=new MenuButton();
         menu_button.popover=pop;
+        menu_button.direction=NONE;
 
 
     var header=new HeaderBar();
@@ -187,7 +188,7 @@ protected override void activate()
            text_exp.set_position(sres.length);
            text_result.label=sres;
         } catch (Error e) {
-            evaluation.clear();
+            //evaluation.clear();
             text_hexp.set_markup(@"<span foreground=\"red\">$(e.message)</span>");
             text_result.label="";
         }

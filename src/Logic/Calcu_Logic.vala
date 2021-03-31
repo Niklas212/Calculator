@@ -278,14 +278,17 @@ public class Evaluation:GLib.Object
                     this.eval();
                 }
                 catch(Error e) {
+                    this.clear();
                     throw e;
                 }
             }
             catch(Error e) {
+                this.clear();
                 throw e;
             }
         }
         catch(Error e) {
+            this.clear();
             throw e;
         }
         this.clear();
