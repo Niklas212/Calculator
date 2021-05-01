@@ -6,6 +6,8 @@ calculator_sources = [
   'Logic/Calcu_Logic.vala',
   'Logic/Default_Values.vala',
   'Logic/Collection.gs',
+  'Widgets/AddCustomDialog.vala',
+  'Widgets/CustomFlowBox.vala',
 ]
 
 calculator_deps = [

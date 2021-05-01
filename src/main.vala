@@ -27,8 +27,6 @@ public Calculator(){
         flags:ApplicationFlags.FLAGS_NONE
     );
 
-
-
 }
 
 public static int main(string[] args)
@@ -42,48 +40,52 @@ public delegate void Placeholder();
 protected override void activate()
 {
 
-    var window =new ApplicationWindow(this);
+    var window = new ApplicationWindow(this);
 
-    var settings=new GLib.Settings("com.github.niklas212.Calculator");
+    var settings = new GLib.Settings("com.github.niklas212.Calculator");
 
-	var con=config(){
-	        use_degrees=settings.get_boolean("use-degrees"),
-	        round_decimal=!(settings.get_boolean("show-all")),
-	        decimal_digit=settings.get_int("decimal-digits"),
-	        custom_variable=Replaceable(){key=get_keys(settings.get_string("var-keys")), value=get_values(settings.get_string("var-values"))}
+    var funs = CustomFunctions();
+    var varis = Replaceable(){key=get_keys(settings.get_string("var-keys")), value=get_values(settings.get_string("var-values"))};
+
+	var con = config(){
+	        use_degrees = settings.get_boolean("use-degrees"),
+	        round_decimal = !(settings.get_boolean("show-all")),
+	        decimal_digit = settings.get_int("decimal-digits"),
+	        custom_variable = varis
 	        };
 
- var evaluation=new Evaluation(con);
+ var evaluation = new Evaluation(con);
 
-	    Placeholder save=()=>{
-        int width,height,pos_x,pos_y;
+	    Placeholder save = () => {
+        int width, height, pos_x, pos_y;
 
         window.get_size(out width,out height);
         window.get_position(out pos_x, out pos_y);
 
-        settings.set_int("win-width",width);
-        settings.set_int("win-height",height);
-        settings.set_int("pos-x",pos_x);
-        settings.set_int("pos-y",pos_y);
-        settings.set_boolean("use-degrees",con.use_degrees);
-        settings.set_boolean("show-all",!(con.round_decimal));
-        settings.set_int("decimal-digits",con.decimal_digit);
-        settings.set_string("var-keys",set_keys(con.custom_variable.key));
-        settings.set_string("var-values",set_values(con.custom_variable.value));
+        settings.set_int("win-width", width);
+        settings.set_int("win-height", height);
+        settings.set_int("pos-x", pos_x);
+        settings.set_int("pos-y", pos_y);
+        settings.set_boolean("use-degrees", con.use_degrees);
+        settings.set_boolean("show-all", !(con.round_decimal));
+        settings.set_int("decimal-digits", con.decimal_digit);
+        settings.set_string("var-keys", set_keys(con.custom_variable.key));
+        settings.set_string("var-values", set_values(con.custom_variable.value));
     };
 
 
-	var ground= new Grid();
-    ground.column_spacing=8;
-    ground.row_spacing=8;
+	var ground = new Grid();
+        ground.column_spacing = 8;
+        ground.row_spacing = 8;
 
 
-    var deg_rad=new ToggleButton.with_label(((con.use_degrees)?"Degree":"Radian"));
+    var deg_rad = new ToggleButton.with_label(( (con.use_degrees) ? "Degree" : "Radian"));
         deg_rad.set_active(con.use_degrees);
-        deg_rad.toggled.connect(()=>{
-            deg_rad.label=(deg_rad.active)?"Degree":"Radian";
-            con.use_degrees=!con.use_degrees;
+        deg_rad.toggled.connect( () => {
+            deg_rad.label = (deg_rad.active) ? "Degree" : "Radian";
+            con.use_degrees = !con.use_degrees;
         });
+
     var btn_dig=new SpinButton.with_range(0,16,1);
         btn_dig.value=con.decimal_digit;
         btn_dig.value_changed.connect(()=>{
@@ -277,55 +279,9 @@ protected override void activate()
     ground.attach(calc_button("sqrt",true,text_exp,popinfo("_(x)")),7,6);
     ground.attach(calc_button("root",true,text_exp,popinfo("_(x, y)")),8,6);
 
-    var btn_add_var=new Button.with_label("add a variable");
-        btn_add_var.get_style_context().add_class("suggested-action");
-        btn_add_var.can_focus=false;
-        btn_add_var.halign=START;
 
-    var box_var=new FlowBox();
-        box_var.selection_mode=NONE;
-        box_var.can_focus=false;
-        box_var.activate_on_single_click=false;
-        box_var.homogeneous=false;
-        box_var.max_children_per_line=100;
+    var box_var = new CustomFlowBox (text_exp, window, &con);
 
-//
-//
-//
-        btn_add_var.clicked.connect(()=>{
-            var add_variable_dialog=new AddVariableDialog();
-                add_variable_dialog.apply.connect((key,value)=>{
-                    string error_mess="";
-                    double d_value;
-                    if(valid_var(key,value,con, out error_mess, out d_value)) {
-                        string[] keys=con.custom_variable.key;
-                        double[] values=con.custom_variable.value;
-                        keys+=key;
-                        values+=d_value;
-                        con.custom_variable=Replaceable(){key=keys, value=values};
-
-                        var cus_var=new VarEntry();
-                            cus_var.remove_clicked.connect((ac_key)=>{
-                            int pos=0;
-                        con.custom_variable=remove_key(con.custom_variable,ac_key,out pos);
-                        var all_children=box_var.get_children();
-                        //pos+1 cause add_variable button
-                        var to_remove=all_children.nth_data(pos+1);
-                        box_var.remove(to_remove);
-                            });
-
-                        box_var.add(cus_var.show(key,value,text_exp));
-                        box_var.show_all();
-                    }
-
-                    return error_mess??"";
-                });
-                add_variable_dialog.show(window);
-        });
-//
-//
-//
-    box_var.add(btn_add_var);
 
     for(int i=0; i<con.custom_variable.key.length; i++) {
                 var cus_var=new VarEntry();
@@ -341,12 +297,6 @@ protected override void activate()
             }
             box_var.show_all();
 
-/*
-    var stack=new Notebook();
-        stack.show_border=false;
-        stack.enable_popup=true;
-        //stack.append_page(box_var,(new Label("variables")));
-*/
     ground.attach(box_var,0,2,9);
 
     window.add(ground);

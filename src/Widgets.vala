@@ -77,58 +77,6 @@ using Gtk;
     }
     }
 
-    public class AddVariableDialog{
-    public signal string apply(string key, string value);
-
-    public Dialog show(ApplicationWindow window) {
-        var dialog=new Dialog.with_buttons("Add a variable",window,DESTROY_WITH_PARENT);
-        dialog.get_content_area().margin=8;
-
-        var btn_a=new Button.with_label("apply");
-                btn_a.get_style_context().add_class("suggested-action");
-                btn_a.margin=8;
-
-        var var_name=new Entry();
-                var_name.margin=8;
-                var_name.input_purpose=ALPHA;
-                var_name.placeholder_text="name";
-
-        var var_value=new Entry();
-                var_value.margin=8;
-                var_value.input_purpose=NUMBER;
-                var_value.placeholder_text="value";
-
-        var show_mess=new Label("");
-
-        dialog.get_content_area().add(add_label(var_name,"name of the variable"));
-        dialog.get_content_area().add(add_label(var_value,"value of the variable"));
-        dialog.get_content_area().add(show_mess);
-        dialog.get_action_area().add(btn_a);
-
-        var_name.activate.connect(()=>{
-            var_value.grab_focus();
-        });
-
-        var_value.activate.connect(()=>{
-            string mess=apply(var_name.text, var_value.text);
-            if(mess!=""&&mess!=null) {
-                show_mess.set_markup(@"<span foreground=\"red\">$mess</span>");
-            }
-            else dialog.hide();
-        });
-
-        btn_a.clicked.connect(()=>{
-            string mess=apply(var_name.text, var_value.text);
-            if(mess!=""&&mess!=null) {
-                show_mess.set_markup(@"<span foreground=\"red\">$mess</span>");
-            }
-            else dialog.hide();
-        });
-
-        dialog.show_all();
-        return dialog;
-    }
-    }
 
 }
 

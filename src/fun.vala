@@ -2,7 +2,7 @@ using Gtk;
 using Calculation;
 
 
-
+//TODO remove this func
 public bool valid_var(string key, string value,config c,out string message=null,out double val=null)
 {
     if(key.length<1||value.length<1) {

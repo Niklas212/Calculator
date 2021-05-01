@@ -112,20 +112,23 @@ struct Replaceable
 		value = values
 		key = keys
 
-	def remove_variable(_name:string) raises Calculation.CALC_ERROR
+	def remove_variable(_name:string, out index:int? = null) raises Calculation.CALC_ERROR
 		if _name in key
 			var keys = new array of string[key.length - 1]
 			var values = new array of double[value.length - 1]
 			if key.length == 1
 				key = keys
 				value = values
+				index = 0
 				return
 			m:int = 0
 			for var i = 0 to key.length
 				if key[i] != _name
 					keys [i - m] = key[i]
 					values [i - m] = value[i]
-				else do m = 1
+				else
+					m = 1
+					index = i
 			key = keys
 			value = values
 		else
