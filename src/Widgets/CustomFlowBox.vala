@@ -23,13 +23,14 @@ public class CustomFlowBox : FlowBox {
             button_add.can_focus = false;
             button_add.halign = START;
             button_add.clicked.connect( show_add_dialog );
+            button_add.set_tooltip_text("add a variable or function");
 
 
         this.add(button_add);
     }
 
     public void add_variable(string key, double value) {
-        this.add(new CustomVariable (key, value, entry, con, remove_variable) );
+        this.add(new CustomVariable (key, value, entry, con, remove_variable, change_variable_value) );
         show_all();
     }
 
@@ -37,6 +38,11 @@ public class CustomFlowBox : FlowBox {
         //TODO important: add childs to index
         var to_remove = get_children().nth_data(1 + index);
         remove (to_remove);
+    }
+
+    public void change_variable_value (string key, double value) {
+        // last parameter is override
+        con.custom_variable.add_variable(key, value, true);
     }
 
     private void show_add_dialog() {
@@ -55,18 +61,22 @@ public class CustomFlowBox : FlowBox {
     private class CustomVariable : Button {
 
         private Popover _popover;
+        private Label _label;
         private string key;
         private double value;
         private config *con;
         //public signal void variable_removed (int index);
         public delegate void VariableRemoved (int index);
+        public delegate void VariableChanged (string key, double value);
         private VariableRemoved variable_removed;
+        private VariableChanged variable_changed;
 
-        public CustomVariable (string key, double value, Entry entry, config *con, VariableRemoved variable_removed) {
+        public CustomVariable (string key, double value, Entry entry, config *con, VariableRemoved variable_removed, VariableChanged variable_changed) {
             this.key = key;
             this.value = value;
             this.con = con;
             this.variable_removed = variable_removed;
+            this.variable_changed = variable_changed;
 
             init_popover();
             label = key;
@@ -102,14 +112,59 @@ public class CustomFlowBox : FlowBox {
                     variable_removed(index);
                 } );
 
+            var change_value = new Button.with_label("change value");
+                change_value.clicked.connect( change_value_dialog );
+
             var box = new Box(VERTICAL, 8);
-                box.pack_start(new Label(@"$key ($value)"));
+                _label = new Label(@"$key ($value)");
+                box.pack_start(_label);
                 box.pack_start(remove);
+                box.pack_start(change_value);
                 box.margin = 4;
 
             _popover.add(box);
             _popover.show_all();
             _popover.hide();
+        }
+
+        private void change_value_dialog() {
+            var dialog = new Dialog();
+
+            var entry = new Entry();
+                entry.input_purpose = NUMBER;
+                entry.placeholder_text = @"new value for $key";
+
+            var message = new Label("");
+
+            var apply = new Button.with_label("apply");
+                apply.get_style_context().add_class("suggested-action");
+                apply.clicked.connect( () => {
+                    var evaluation = new Calculation.Evaluation.small();
+                    try {
+                        evaluation.eval_auto(entry.text);
+                        variable_changed(key, evaluation.result);
+                        _label.label = @"$key ($(evaluation.result))";
+                        set_tooltip_text(evaluation.result.to_string());
+                        dialog.hide();
+                    } catch (Error e) {
+                        message.set_markup (@"<span foreground=\"red\">$(e.message)</span>");
+                    }
+                });
+
+            entry.activate.connect( apply.clicked );
+
+            var box_h = new Box (HORIZONTAL, 8);
+                box_h.pack_start(new Label ("new value"));
+                box_h.pack_start(entry);
+
+            var box = new Box (VERTICAL, 8);
+                box.pack_start(box_h);
+                box.pack_start(message);
+
+            dialog.get_content_area().margin = 8;
+            dialog.get_content_area().add(box);
+            dialog.get_action_area().add(apply);
+            dialog.show_all();
         }
 
 
