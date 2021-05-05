@@ -91,49 +91,6 @@ struct Part
 	has_value:bool
 	data: Data
 
-struct Replaceable
-	key:array of string
-	value:array of double
-
-	def add_variable(_key:string, _value:double, _override:bool = false) raises Calculation.CALC_ERROR
-		if _key in key or _key in get_variable().key
-			if _key in get_variable().key or not _override
-				raise new Calculation.CALC_ERROR.UNKNOWN(@"'$(_key)' is already defined")
-			if _override
-				for var i = 0 to key.length
-					if key[i] == _key
-						key[i] = _key
-						value[i] = _value
-						return
-		var values = value
-		var keys = key
-		keys += _key
-		values += _value
-		value = values
-		key = keys
-
-	def remove_variable(_name:string, out index:int? = null) raises Calculation.CALC_ERROR
-		if _name in key
-			var keys = new array of string[key.length - 1]
-			var values = new array of double[value.length - 1]
-			if key.length == 1
-				key = keys
-				value = values
-				index = 0
-				return
-			m:int = 0
-			for var i = 0 to key.length
-				if key[i] != _name
-					keys [i - m] = key[i]
-					values [i - m] = value[i]
-				else
-					m = 1
-					index = i
-			key = keys
-			value = values
-		else
-			raise new Calculation.CALC_ERROR.UNKNOWN(@"the variable '$_name' does not exist")
-
 struct Operation
 	key:array of string
 	priority:array of int

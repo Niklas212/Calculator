@@ -107,9 +107,13 @@ public class CustomFlowBox : FlowBox {
 
             var remove = new Button.with_label("remove");
                 remove.clicked.connect( () => {
-                    int index = -1;
-                    con.custom_variable.remove_variable(key, out index);
-                    variable_removed(index);
+                    try {
+                        variable_removed(con.custom_variable.remove_variable(key));
+                    } catch (Error e) {
+                        print(e.message);
+                    }
+                    //con.custom_variable = remove_key(con.custom_variable, key, out index);
+                    //variable_removed(index);
                 } );
 
             var change_value = new Button.with_label("change value");
