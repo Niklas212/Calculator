@@ -116,8 +116,10 @@ public class CustomFlowBox : FlowBox {
                     //variable_removed(index);
                 } );
 
-            var change_value = new Button.with_label("change value");
-                change_value.clicked.connect( change_value_dialog );
+            var change_value = new MenuButton();
+                change_value.label = "change value";
+                change_value.set_popover( change_value_popover() );
+               // change_value.clicked.connect( change_value_dialog );
 
             var box = new Box(VERTICAL, 8);
                 _label = new Label(@"$key ($value)");
@@ -130,9 +132,9 @@ public class CustomFlowBox : FlowBox {
             _popover.show_all();
             _popover.hide();
         }
-
-        private void change_value_dialog() {
-            var dialog = new Dialog();
+        //TODO remove
+        private Popover change_value_popover() {
+            var popover = new Popover(this);
 
             var entry = new Entry();
                 entry.input_purpose = NUMBER;
@@ -140,35 +142,29 @@ public class CustomFlowBox : FlowBox {
 
             var message = new Label("");
 
-            var apply = new Button.with_label("apply");
-                apply.get_style_context().add_class("suggested-action");
-                apply.clicked.connect( () => {
-                    var evaluation = new Calculation.Evaluation.small();
+
+            entry.activate.connect( () => {
+                var evaluation = new Calculation.Evaluation.small();
                     try {
                         evaluation.eval_auto(entry.text);
                         variable_changed(key, evaluation.result);
                         _label.label = @"$key ($(evaluation.result))";
                         set_tooltip_text(evaluation.result.to_string());
-                        dialog.hide();
+                        popover.popdown();
                     } catch (Error e) {
                         message.set_markup (@"<span foreground=\"red\">$(e.message)</span>");
                     }
-                });
-
-            entry.activate.connect( apply.clicked );
-
-            var box_h = new Box (HORIZONTAL, 8);
-                box_h.pack_start(new Label ("new value"));
-                box_h.pack_start(entry);
+            } );
 
             var box = new Box (VERTICAL, 8);
-                box.pack_start(box_h);
+                box.pack_start(entry);
                 box.pack_start(message);
+                box.margin = 4;
+                box.show_all();
 
-            dialog.get_content_area().margin = 8;
-            dialog.get_content_area().add(box);
-            dialog.get_action_area().add(apply);
-            dialog.show_all();
+            popover.add(box);
+
+            return popover;
         }
 
 
