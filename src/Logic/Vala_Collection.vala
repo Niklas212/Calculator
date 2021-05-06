@@ -47,15 +47,82 @@ public struct Replaceable {
                 }
             }
 
-            print("###start###\n");
+            //print("###start###\n");
             key = keys;
             value = values;
-            print("###end###\n");
+            //print("###end###\n");
             return index;
         }
 
          else {
             throw new Calculation.CALC_ERROR.UNKNOWN(@"the variable '$_name' does not exist");
         }
+    }
+}
+
+public struct CustomFunctions {
+    public string[] key;
+    public int[] arg_right;
+    public UserFuncData[] data;
+
+    public void add_function(string _key, int _arg_right, UserFuncData _data, bool _override) throws Calculation.CALC_ERROR {
+        if (_key in key) {
+            if (_override) {
+                for (int i = 0; i < key.length; i++) {
+                    if (key[i] == _key) {
+                        arg_right[i] = _arg_right;
+						data[i] = _data;
+						return;
+                    }
+                }
+            } else {
+                throw new Calculation.CALC_ERROR.UNKNOWN(@"'$_key' is already defined");
+            }
+        }
+
+        var keys = key;
+        var args = arg_right;
+        var datas = data;
+
+        keys += _key;
+        args += _arg_right;
+        datas += _data;
+
+        key = keys;
+        arg_right = args;
+        data = datas;
+    }
+
+    public int remove_function(string name) throws Calculation.CALC_ERROR {
+        if (! (name in key) )
+            throw new Calculation.CALC_ERROR.UNKNOWN(@"the function '$name' is not defined");
+
+        string[] keys = {};
+        int[] args = {};
+        UserFuncData[] datas = {};
+        int index = -1;
+
+        if (key.length == 1) {
+            key = keys;
+            arg_right = args;
+            data = datas;
+            return 0;
+        }
+
+        for (int i = 0; i < key.length; i++) {
+            if (key[i] != name) {
+                keys += key[i];
+                args += arg_right[i];
+                datas += data[i];
+            }
+            else
+                index = i;
+        }
+
+        key = keys;
+        data = datas;
+        arg_right = args;
+
+        return index;
     }
 }

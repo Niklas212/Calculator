@@ -31,7 +31,9 @@ public Calculator(){
 
 public static int main(string[] args)
 {
-    var app=new Calculator();
+    Intl.setlocale( LocaleCategory.ALL, "");
+
+    var app = new Calculator();
     return app.run(args);
 }
 
@@ -157,7 +159,6 @@ protected override void activate()
     var text_exp= new Entry();
     text_exp.set_hexpand(true);
     text_exp.set_vexpand(true);
-
 
 
     var text_result=new Label("");

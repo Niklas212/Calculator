@@ -29,7 +29,7 @@ struct PreparePart
 	length:int
 	index:int
 
-struct CustomFunctions
+/*struct CustomFunctions
 	key: array of string
 	arg_right: array of int
 	data: array of UserFuncData
@@ -78,7 +78,7 @@ struct CustomFunctions
 		data = datas
 		arg_right = args
 
-
+*/
 struct UserFunc
 	key: array of string
 	eval:Eval
