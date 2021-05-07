@@ -10,6 +10,8 @@ public class CustomFlowBox : FlowBox {
     private Window window;
     private Entry entry;
 
+    private int var_count = 0;
+
 
     public CustomFlowBox (Entry entry, Window window, config *con) {
         this.entry = entry;
@@ -30,17 +32,22 @@ public class CustomFlowBox : FlowBox {
 
 
         this.add(button_add);
+        var separator  = new Separator(VERTICAL);
+            separator.halign = CENTER;
+        this.add( separator );
+
     }
 
     public void add_variable(string key, double value) {
-        // config is already updated when this function is called
-        this.insert(new CustomVariable (key, value, entry, con, remove_variable, change_variable_value), /*1 +*/ con.custom_variable.key.length );
+        var_count ++;
+        this.insert(new CustomVariable (key, value, entry, con, remove_variable, change_variable_value), /*1 +*/ var_count );
         show_all();
     }
 
     public void remove_variable (int index) {
         //TODO important: add childs to index
         var to_remove = get_children().nth_data(1 + index);
+        var_count --;
         remove (to_remove);
     }
 
@@ -55,7 +62,7 @@ public class CustomFlowBox : FlowBox {
     }
 
     public void remove_function(int index) {
-        var to_remove = get_children().nth_data(1 + con.custom_variable.key.length + index);
+        var to_remove = get_children().nth_data(2 + var_count + index);
         remove (to_remove);
     }
 
@@ -111,6 +118,7 @@ public class CustomFlowBox : FlowBox {
             _popover = new Popover(this);
 
             var remove = new Button.with_label("remove");
+                remove.get_style_context().add_class("destructive-action");
                 remove.clicked.connect( () => {
                     try {
                         variable_removed(con.custom_variable.remove_variable(key));
@@ -217,6 +225,7 @@ public class CustomFlowBox : FlowBox {
         _popover = new Popover(this);
 
         var btn_remove = new Button.with_label("remove");
+            btn_remove.get_style_context().add_class("destructive-action");
             btn_remove.clicked.connect( () => {
                 try {
                     function_removed(con.custom_functions.remove_function(key));
