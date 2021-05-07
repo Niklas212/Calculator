@@ -65,7 +65,7 @@ public struct CustomFunctions {
     public int[] arg_right;
     public UserFuncData[] data;
 
-    public void add_function(string _key, int _arg_right, UserFuncData _data, bool _override) throws Calculation.CALC_ERROR {
+    public void add_function(string _key, int _arg_right, UserFuncData _data, bool _override = false) throws Calculation.CALC_ERROR {
         if (_key in key) {
             if (_override) {
                 for (int i = 0; i < key.length; i++) {

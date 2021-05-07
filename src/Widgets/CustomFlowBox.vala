@@ -2,6 +2,9 @@ using Gtk;
 
 public class CustomFlowBox : FlowBox {
 
+    public delegate void VariableRemoved (int index);
+    public delegate void VariableChanged (string key, double value);
+
     private Button button_add;
     private config *con;
     private Window window;
@@ -21,7 +24,7 @@ public class CustomFlowBox : FlowBox {
         button_add = new Button.with_label("+");
             button_add.get_style_context().add_class("suggested-action");
             button_add.can_focus = false;
-            button_add.halign = START;
+            //button_add.halign = CENTER;
             button_add.clicked.connect( show_add_dialog );
             button_add.set_tooltip_text("add a variable or function");
 
@@ -30,7 +33,8 @@ public class CustomFlowBox : FlowBox {
     }
 
     public void add_variable(string key, double value) {
-        this.add(new CustomVariable (key, value, entry, con, remove_variable, change_variable_value) );
+        // config is already updated when this function is called
+        this.insert(new CustomVariable (key, value, entry, con, remove_variable, change_variable_value), /*1 +*/ con.custom_variable.key.length );
         show_all();
     }
 
@@ -45,17 +49,21 @@ public class CustomFlowBox : FlowBox {
         con.custom_variable.add_variable(key, value, true);
     }
 
+    public void add_function(string key, string[] paras) {
+        this.add(new CustomFunction(key, paras, entry, con, remove_function));
+        show_all();
+    }
+
+    public void remove_function(int index) {
+        var to_remove = get_children().nth_data(1 + con.custom_variable.key.length + index);
+        remove (to_remove);
+    }
+
     private void show_add_dialog() {
         var add_variable_dialog = new AddCustomDialog( (ApplicationWindow) window, con);
 
-        add_variable_dialog.var_applied.connect( () => {
-
-                var key = con.custom_variable.key[con.custom_variable.key.length - 1];
-                var value = con.custom_variable.value[con.custom_variable.key.length - 1];
-
-                add_variable(key, value);
-
-        });
+        add_variable_dialog.var_applied.connect( add_variable );
+        add_variable_dialog.fun_applied.connect( add_function );
     }
 
     private class CustomVariable : Button {
@@ -65,9 +73,6 @@ public class CustomFlowBox : FlowBox {
         private string key;
         private double value;
         private config *con;
-        //public signal void variable_removed (int index);
-        public delegate void VariableRemoved (int index);
-        public delegate void VariableChanged (string key, double value);
         private VariableRemoved variable_removed;
         private VariableChanged variable_changed;
 
@@ -132,7 +137,7 @@ public class CustomFlowBox : FlowBox {
             _popover.show_all();
             _popover.hide();
         }
-        //TODO remove
+
         private Popover change_value_popover() {
             var popover = new Popover(this);
 
@@ -170,5 +175,66 @@ public class CustomFlowBox : FlowBox {
 
 
     }
+
+    public class CustomFunction : Button {
+        private config *con;
+        private string key;
+        private string description;
+        private VariableRemoved function_removed;
+        private Popover _popover;
+
+        public CustomFunction(string key, string[] paras, Entry entry, config *con, VariableRemoved function_removed) {
+            this.con = con;
+            this.key = key;
+            this.function_removed = function_removed;
+
+            description = key + " (" + string.joinv(", ", paras) + ")";
+
+            init_popover();
+            label = key;
+            set_tooltip_text(description);
+            can_focus = false;
+
+            //show popup
+            button_press_event.connect( (event) => {
+                if (event.type == BUTTON_PRESS && event.button == 3)
+                    _popover.show();
+                return false;
+            });
+
+            //set text
+            clicked.connect( () => {
+                int pos = entry.cursor_position;
+                string txt = entry.text;
+
+                entry.text = txt[0:pos] + key + txt[pos:txt.length];
+                entry.set_position(pos + key.length);
+            } );
+
+        }
+
+    private void init_popover() {
+        _popover = new Popover(this);
+
+        var btn_remove = new Button.with_label("remove");
+            btn_remove.clicked.connect( () => {
+                try {
+                    function_removed(con.custom_functions.remove_function(key));
+                } catch (Error e) {
+                    print(e.message);
+                }
+            });
+
+        var box = new Box(VERTICAL, 8);
+            box.add(btn_remove);
+            box.margin = 4;
+
+        _popover.add(box);
+        _popover.show_all();
+        _popover.hide();
+    }
+
+    }
+
 }
 

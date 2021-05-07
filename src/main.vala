@@ -53,7 +53,8 @@ protected override void activate()
 	        use_degrees = settings.get_boolean("use-degrees"),
 	        round_decimal = !(settings.get_boolean("show-all")),
 	        decimal_digit = settings.get_int("decimal-digits"),
-	        custom_variable = varis
+	        custom_variable = varis,
+	        custom_functions = funs
 	        };
 
  var evaluation = new Evaluation(con);
@@ -298,4 +299,5 @@ protected override void activate()
 
 }
 }
+
 
