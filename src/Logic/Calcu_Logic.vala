@@ -366,6 +366,17 @@ public class Evaluation:GLib.Object
                     return func_data.evaluation.result ?? 0 / 0;
             };
 
+    public static void get_data_range (UserFuncData data, double start, double end, int amount_of_steps, ref double[] values, int array_start ) {
+
+        for (int i = 0; i < amount_of_steps; i++) {
+            double x = start + (end - start) / (amount_of_steps - 1) * i;
+
+            values [i + array_start] = fun_extern_eval ( {x}, data);
+
+        }
+
+    }
+
 }
 
 }

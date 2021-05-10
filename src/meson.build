@@ -3,12 +3,14 @@ calculator_sources = [
   'fun.vala',
   'Widgets.vala',
   'Collect.gs',
+  'funs.gs',
   'Logic/Calcu_Logic.vala',
   'Logic/Default_Values.vala',
   'Logic/Collection.gs',
   'Logic/Vala_Collection.vala',
   'Widgets/AddCustomDialog.vala',
   'Widgets/CustomFlowBox.vala',
+  'Widgets/Graphics.vala',
 ]
 
 calculator_deps = [

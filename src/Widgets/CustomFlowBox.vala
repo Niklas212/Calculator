@@ -1,4 +1,5 @@
 using Gtk;
+using Calculation;
 
 public class CustomFlowBox : FlowBox {
 
@@ -234,8 +235,49 @@ public class CustomFlowBox : FlowBox {
                 }
             });
 
+        var graphics_btn = new Button.with_label("show graphics");
+            graphics_btn.clicked.connect( () => {
+
+
+                var function_graph = new FunctionGraph();
+
+                    /*function_graph.request_data.connect ( (start, end, steps, ref values, array_start) => {
+                        //double
+                        for (int i = 0; i < steps; i ++) {
+                            double x = i * (end - start) / (steps - 1) + start;
+                            values[array_start + i] = 0.25 * x * x - 4;
+                            //values[i] = i - 5;
+                        }
+
+                        //return values;
+                    });*/
+
+                    int data_position = get_string_position (con.custom_functions.key, key);
+
+                    var evaluation = new Evaluation.small (*con);
+                    var data = con.custom_functions.data[data_position].with_evaluation (evaluation);
+
+
+                    function_graph.request_data.connect ( (start, end, steps, ref values, array_start) => {
+                        Evaluation.get_data_range (data, start, end, steps, ref values, array_start);
+                    });
+
+                var window = new Window();
+                    window.title = description;
+                    window.add (function_graph);
+                    //window.destroy.connect (Gtk.main_quit);
+                    window.show_all ();
+            });
+
+        if (con.custom_functions.arg_right [get_string_position (con.custom_functions.key, key)] != 1) {
+            graphics_btn.sensitive = false;
+            graphics_btn.set_tooltip_text ("only functions with one parameter can be shown");
+
+        }
+
         var box = new Box(VERTICAL, 8);
             box.add(btn_remove);
+            box.add(graphics_btn);
             box.margin = 4;
 
         _popover.add(box);
