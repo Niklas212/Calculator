@@ -46,7 +46,7 @@ protected override void activate()
 
     var settings = new GLib.Settings("com.github.niklas212.Calculator");
 
-    var funs = CustomFunctions();
+    var funs = functions_from_string (settings.get_string ("custom-funs"));
     var varis = Replaceable(){key=get_keys(settings.get_string("var-keys")), value=get_values(settings.get_string("var-values"))};
 
 	var con = config(){
@@ -74,6 +74,7 @@ protected override void activate()
         settings.set_int("decimal-digits", con.decimal_digit);
         settings.set_string("var-keys", set_keys(con.custom_variable.key));
         settings.set_string("var-values", set_values(con.custom_variable.value));
+        settings.set_string ("custom-funs", functions_to_string (con.custom_functions));
     };
 
 
@@ -287,6 +288,11 @@ protected override void activate()
 
     for (int i = 0; i < con.custom_variable.key.length; i++) {
         box_var.add_variable (con.custom_variable.key[i], con.custom_variable.value[i]);
+    }
+
+    for (int i = 0; i < con.custom_functions.key.length; i++) {
+        var _data = con.custom_functions.data[i] as GuiUserFuncData;
+        box_var.add_function (con.custom_functions.key[i], _data.parameters);
     }
 
     ground.attach(box_var,0,2,9);

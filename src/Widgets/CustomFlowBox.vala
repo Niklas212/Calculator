@@ -225,6 +225,8 @@ public class CustomFlowBox : FlowBox {
     private void init_popover() {
         _popover = new Popover(this);
 
+        var label = new Label(description);
+
         var btn_remove = new Button.with_label("remove");
             btn_remove.get_style_context().add_class("destructive-action");
             btn_remove.clicked.connect( () => {
@@ -235,32 +237,21 @@ public class CustomFlowBox : FlowBox {
                 }
             });
 
-        var graphics_btn = new Button.with_label("show graphics");
+        var graphics_btn = new Button.with_label("display graph");
             graphics_btn.clicked.connect( () => {
 
 
                 var function_graph = new FunctionGraph();
 
-                    /*function_graph.request_data.connect ( (start, end, steps, ref values, array_start) => {
-                        //double
-                        for (int i = 0; i < steps; i ++) {
-                            double x = i * (end - start) / (steps - 1) + start;
-                            values[array_start + i] = 0.25 * x * x - 4;
-                            //values[i] = i - 5;
-                        }
+                int data_position = get_string_position (con.custom_functions.key, key);
 
-                        //return values;
-                    });*/
-
-                    int data_position = get_string_position (con.custom_functions.key, key);
-
-                    var evaluation = new Evaluation.small (*con);
-                    var data = con.custom_functions.data[data_position].with_evaluation (evaluation);
+                var evaluation = new Evaluation.small (*con);
+                var data = con.custom_functions.data[data_position].with_evaluation (evaluation);
 
 
-                    function_graph.request_data.connect ( (start, end, steps, ref values, array_start) => {
-                        Evaluation.get_data_range (data, start, end, steps, ref values, array_start);
-                    });
+                function_graph.request_data.connect ( (start, end, steps, ref values, array_start) => {
+                    Evaluation.get_data_range (data, start, end, steps, ref values, array_start);
+                });
 
                 var window = new Window();
                     window.title = description;
@@ -276,6 +267,7 @@ public class CustomFlowBox : FlowBox {
         }
 
         var box = new Box(VERTICAL, 8);
+            box.add(label);
             box.add(btn_remove);
             box.add(graphics_btn);
             box.margin = 4;

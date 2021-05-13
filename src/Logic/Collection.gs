@@ -219,7 +219,7 @@ def eval_seq(data:GenericArray of Sequence?):GenericArray of Sequence?
 def possible_number(data:string,negative:bool,is:bool=false):bool
 	is_decimal:bool=false
 
-	for var i=0 to data.length
+	for var i=0 to (data.length - 1)
 		if data[i].to_string() in "0123456789"
 			continue
 		else if data[i] == '.'

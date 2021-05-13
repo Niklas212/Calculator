@@ -11,7 +11,7 @@ public class FunctionGraph : DrawingArea {
         private int data_start = 0;
         private int data_end = 0;
 
-        private int steps_per_size = 2;
+        private int steps_per_size = 10;
         private int amount_of_steps = 0;
         private double[] values;
         private double SIZE = 40;
@@ -165,8 +165,15 @@ public class FunctionGraph : DrawingArea {
 
             //print (@"#$start_line_position, $(values.length)\n");
 
+            //bool pass_next = values [0] != (0.0 / 0.0) && values [0] != (1.0 / 0.0) && values [0] != (-1.0 / 0.0);
+
             for (int i = 1; i < amount_of_steps; i++) {
-                cr.line_to (start_line_position + i * horizontal_step_size, height / 2 - SIZE * values[i] / size_value);
+                if (values [i] != (0.0 / 0.0) && values [i] != (1.0 / 0.0) && values [i] != (-1.0 / 0.0) )
+                    cr.line_to (start_line_position + i * horizontal_step_size, height / 2 - SIZE * values[i] / size_value);
+                else if (i + 1 < amount_of_steps) {
+                    cr.move_to (start_line_position + (i + 1) * horizontal_step_size, height / 2 - SIZE * values[i + 1] / size_value);
+                    //pass_next = !pass_next;
+                }
                 //cr.move_to (start_line_position + i * horizontal_step_size, height / 2 - SIZE * values[i]);
             }
 

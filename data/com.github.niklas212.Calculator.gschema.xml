@@ -47,5 +47,10 @@
       <summary>do not manually change this</summary>
       <description>the keys of the created variables seperated by a space</description>
     </key>
+	  <key name="custom-funs" type="s">
+      <default>" "</default>
+      <summary>do not manually change this</summary>
+      <description> </description>
+    </key>
 	</schema>
 </schemalist>

@@ -187,7 +187,9 @@ public class AddCustomDialog : Dialog {
 
             try {
 
-                var data = new UserFuncData.with_data (expression, args);
+                var data = new GuiUserFuncData.with_data (expression, args);
+                    data.parameters = args;
+                    data.expression = expression;
                 con.custom_functions.add_function(name, args.length, data, false);
                 fun_applied(name, args);
                 this.hide();
