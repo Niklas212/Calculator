@@ -29,7 +29,7 @@ struct PreparePart
 	length:int
 	index:int
 
-/*struct CustomFunctions
+struct CustomFunctions
 	key: array of string
 	arg_right: array of int
 	data: array of UserFuncData
@@ -37,7 +37,7 @@ struct PreparePart
 	def add_function(_key:string, _arg_right:int, _data:UserFuncData, _override:bool = false) raises Calculation.CALC_ERROR
 		if _key in key
 			if _override
-				for var i = 0 to key.length
+				for var i = 0 to (key.length - 1)
 					if key[i] == _key
 						arg_right[i] = _arg_right
 						data[i] = _data
@@ -54,8 +54,10 @@ struct PreparePart
 		arg_right = args
 		data = datas
 
-	def remove_function(name:string) raises Calculation.CALC_ERROR
+	def remove_function(name:string):int raises Calculation.CALC_ERROR
 		if not (name in key) do raise new Calculation.CALC_ERROR.UNKNOWN(@"the function '$name' is not defined")
+
+		index:int = -1
 
 		var keys = new array of string[key.length - 1]
 		var args = new array of int[key.length - 1]
@@ -65,11 +67,13 @@ struct PreparePart
 			key = keys
 			arg_right = args
 			data = datas
-			return
+			return 0
 
 		m:int = 0
 		for var i = 0 to keys.length
-			if key[i] == name do m = 1
+			if key[i] == name
+				m = 1
+				index = i
 			else
 				keys[i - m] = key[i]
 				args[i - m] = arg_right[i]
@@ -78,7 +82,9 @@ struct PreparePart
 		data = datas
 		arg_right = args
 
-*/
+		return index
+
+
 struct UserFunc
 	key: array of string
 	eval:Eval
@@ -90,6 +96,51 @@ struct Part
 	eval:fun
 	has_value:bool
 	data: Data
+
+struct Replaceable
+	key:array of string
+	value:array of double
+
+	def add_variable(_key:string, _value:double, _override:bool = false) raises Calculation.CALC_ERROR
+		if _key in key or _key in get_variable().key
+			if _key in get_variable().key or not _override
+				raise new Calculation.CALC_ERROR.UNKNOWN(@"'$(_key)' is already defined")
+			if _override
+				for var i = 0 to (key.length - 1)
+					if key[i] == _key
+						key[i] = _key
+						value[i] = _value
+						return
+		var values = value
+		var keys = key
+		keys += _key
+		values += _value
+		value = values
+		key = keys
+
+	def remove_variable(_name:string):int raises Calculation.CALC_ERROR
+		index:int = -1
+		if _name in key
+			var keys = new array of string[key.length - 1]
+			var values = new array of double[value.length - 1]
+			if key.length == 1
+				key = keys
+				value = values
+				return 0
+			m:int = 0
+			for var i = 0 to (key.length - 1)
+				if key[i] != _name
+					keys [i - m] = key[i]
+					values [i - m] = value[i]
+				else
+					m = 1
+					index = i
+			key = keys
+			value = values
+
+			return index
+		else
+			raise new Calculation.CALC_ERROR.UNKNOWN(@"the variable '$_name' does not exist")
 
 struct Operation
 	key:array of string
