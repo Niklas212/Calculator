@@ -47,7 +47,7 @@ protected override void activate()
     var settings = new GLib.Settings("com.github.niklas212.Calculator");
 
     var funs = functions_from_string (settings.get_string ("custom-funs"));
-    var varis = Replaceable(){key=get_keys(settings.get_string("var-keys")), value=get_values(settings.get_string("var-values"))};
+    var varis = variables_from_string (settings.get_string ("custom-vars"));
 
 	var con = config(){
 	        use_degrees = settings.get_boolean("use-degrees"),
@@ -72,9 +72,8 @@ protected override void activate()
         settings.set_boolean("use-degrees", con.use_degrees);
         settings.set_boolean("show-all", !(con.round_decimal));
         settings.set_int("decimal-digits", con.decimal_digit);
-        settings.set_string("var-keys", set_keys(con.custom_variable.key));
-        settings.set_string("var-values", set_values(con.custom_variable.value));
         settings.set_string ("custom-funs", functions_to_string (con.custom_functions));
+        settings.set_string ("custom-vars", variables_to_string (con.custom_variable));
     };
 
 

@@ -1,3 +1,17 @@
+struct PopInfo
+	show:bool
+	custom_text:bool
+	definition:string
+	example:string
+
+def popinfo (defi:string): PopInfo
+	var ret = PopInfo()
+
+	ret.show = true
+	ret.definition = defi
+
+	return ret
+
 
 class GuiUserFuncData : UserFuncData
 	parameters: array of string
@@ -68,3 +82,40 @@ def functions_from_string (data:string): CustomFunctions raises Calculation.CALC
 	ret.arg_right = args
 
 	return ret
+
+def variables_from_string (data:string): Replaceable
+	var ret = Replaceable()
+
+	var values = ret.value
+	var keys = ret.key
+
+	var parts = data.split ("'")
+
+	if parts.length > 1
+		var number = false
+
+		for part in parts
+			if number
+				values += double.parse (part)
+			else
+				keys += part
+
+			number = !number
+
+	ret.key = keys
+	ret.value = values
+	return ret
+
+def variables_to_string (data:Replaceable):string
+
+	if data.key.length < 1
+		return ""
+
+	var builder = new StringBuilder (@"$(data.key[0])'$(data.value[0])")
+
+	for var i = 1 to (data.key.length - 1)
+		builder.append (@"'$(data.key[i])'$(data.value[i])")
+
+	return builder.str
+
+	

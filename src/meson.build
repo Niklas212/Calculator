@@ -1,8 +1,6 @@
 calculator_sources = [
   'main.vala',
-  'fun.vala',
   'Widgets.vala',
-  'Collect.gs',
   'funs.gs',
   'Logic/Calcu_Logic.vala',
   'Logic/Default_Values.vala',
