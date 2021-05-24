@@ -118,4 +118,12 @@ def variables_to_string (data:Replaceable):string
 
 	return builder.str
 
+//TODO make it faster
+def wrap (value:int, min:int, max:int):int
+	if value > max
+		return max
+	else if value < min
+		return min
+	else do return value
+
 	
