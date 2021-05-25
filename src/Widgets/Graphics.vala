@@ -165,7 +165,10 @@ public class FunctionGraph : DrawingArea {
             cr.set_line_width (2);
 
             int horizontal_step_size = (int) (SIZE / steps_per_size);
-            int start_line_position = (int) (((double) data_start - visible_data_start) * SIZE);
+
+            int visible_x = width / -2 - shift_x;
+            int real_x = data_start * SIZE;
+            int start_line_position = real_x - visible_x;
 
             cr.move_to (start_line_position, height / 2 - SIZE * values[0] / size_value + shift_y);
 
