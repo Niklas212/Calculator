@@ -3,6 +3,8 @@ using Calculation;
 
 public class CustomFlowBox : FlowBox {
 
+    public signal void activate_dialog (string tab);
+
     public delegate void VariableRemoved (int index);
     public delegate void VariableChanged (string key, double value);
 
@@ -28,7 +30,7 @@ public class CustomFlowBox : FlowBox {
             button_add.get_style_context().add_class("suggested-action");
             button_add.can_focus = false;
             //button_add.halign = CENTER;
-            button_add.clicked.connect( show_add_dialog );
+            button_add.clicked.connect( () => show_add_dialog () );
             button_add.set_tooltip_text("add a variable or function");
 
 
@@ -36,6 +38,8 @@ public class CustomFlowBox : FlowBox {
         var separator  = new Separator(VERTICAL);
             separator.halign = CENTER;
         this.add( separator );
+
+        this.activate_dialog.connect ( (name) => show_add_dialog (name) );
 
     }
 
@@ -67,8 +71,8 @@ public class CustomFlowBox : FlowBox {
         remove (to_remove);
     }
 
-    private void show_add_dialog() {
-        var add_variable_dialog = new AddCustomDialog( (ApplicationWindow) window, con);
+    private void show_add_dialog(string name = "variable") {
+        var add_variable_dialog = new AddCustomDialog( (ApplicationWindow) window, con, name);
 
         add_variable_dialog.var_applied.connect( add_variable );
         add_variable_dialog.fun_applied.connect( add_function );

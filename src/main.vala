@@ -300,6 +300,20 @@ protected override void activate()
 
     window.show_all();
 
+    var add_var_action = new SimpleAction ("add-var", null);
+    var add_fun_action = new SimpleAction ("add-fun", null);
+
+    add_action ( add_var_action );
+    add_action ( add_fun_action );
+
+
+    set_accels_for_action ("app.add-var", {"<Control>a"});
+    set_accels_for_action ("app.add-fun", {"<Control>f"});
+
+
+    add_var_action.activate.connect ( () => box_var.activate_dialog ("variable") );
+    add_fun_action.activate.connect ( () => box_var.activate_dialog ("function") );
+
 	Gtk.main();
 
 }

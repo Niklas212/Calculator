@@ -6,7 +6,7 @@ public class AddCustomDialog : Dialog {
         public signal void var_applied (string key, double value);
         public signal void fun_applied (string name, string[] paras);
 
-        public AddCustomDialog (ApplicationWindow window, config *con, Calculation.Evaluation eval = new Calculation.Evaluation.small()) {
+        public AddCustomDialog (ApplicationWindow window, config *con, string active_tab = "variable", Calculation.Evaluation eval = new Calculation.Evaluation.small()) {
 
             // TODO set title
             this.get_content_area().margin = 8;
@@ -120,6 +120,8 @@ public class AddCustomDialog : Dialog {
             var_name.grab_focus();
 
             this.show_all();
+
+            stack.visible_child_name = active_tab;
         }
 
         private void check_add_variable(string key, string value, Label show_mess, config *con, Calculation.Evaluation eval) {
