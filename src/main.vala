@@ -57,9 +57,10 @@ protected override void activate()
 	        custom_functions = funs
 	        };
 
- var evaluation = new Evaluation(con);
+    var evaluation = new Evaluation(con);
 
-	    Placeholder save = () => {
+    //TODO automatically save vars and funs on changed
+	Placeholder save = () => {
         int width, height, pos_x, pos_y;
 
         window.get_size(out width,out height);
@@ -302,17 +303,28 @@ protected override void activate()
 
     var add_var_action = new SimpleAction ("add-var", null);
     var add_fun_action = new SimpleAction ("add-fun", null);
+    var quit_action = new SimpleAction ("quit", null);
+    var menu_action = new SimpleAction ("menu", null);
 
     add_action ( add_var_action );
     add_action ( add_fun_action );
+    add_action ( quit_action );
+    add_action ( menu_action );
 
 
     set_accels_for_action ("app.add-var", {"<Control>a"});
     set_accels_for_action ("app.add-fun", {"<Control>f"});
+    set_accels_for_action ("app.quit", {"<Control>q"});
+    set_accels_for_action ("app.menu", {"F10"});
 
 
     add_var_action.activate.connect ( () => box_var.activate_dialog ("variable") );
     add_fun_action.activate.connect ( () => box_var.activate_dialog ("function") );
+    quit_action.activate.connect ( () => {
+        save ();
+        window.destroy ();
+    } );
+    menu_action.activate.connect ( menu_button.clicked );
 
 	Gtk.main();
 
