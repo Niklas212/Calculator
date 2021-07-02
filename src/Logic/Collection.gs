@@ -23,6 +23,10 @@ struct config
 	custom_variable:Replaceable
 	custom_functions:CustomFunctions
 
+struct MatchData
+	key: array of string
+	type: Type
+
 struct PreparePart
 	value:string
 	type:Type
@@ -193,6 +197,7 @@ class UserFuncData: Data
 				keys += i
 				values += 0.0
 		e.variable = Replaceable(){key = keys, value = values}
+		e.update_match_data ()
 		try
 			e.split()
 		except er: Calculation.CALC_ERROR
@@ -267,36 +272,69 @@ def eval_seq(data:GenericArray of Sequence?):GenericArray of Sequence?
 	return data
 
 
-def possible_number(data:string,negative:bool,is:bool=false):bool
-	is_decimal:bool=false
 
-	for var i=0 to (data.length - 1)
-		if data[i].to_string() in "0123456789"
-			continue
-		else if data[i] == '.'
-			if is_decimal //or (is and i+1==data.length)
-				return false
+def next_multi_match (input:string, data:array of MatchData): PreparePart
+	max_match_type_index:int = -1
+	max_match_index:int = -1
+	max_match_length:int = -1
+
+	i:int = -1
+	j:int = -1
+	// consider using sorted (string-length) data
+	for d in data
+		i ++
+		j = -1
+		for e in d.key
+			j ++
+			if (e.length <= input.length && e.length > max_match_length && input[0:e.length] == e)
+				max_match_type_index = i
+				max_match_index = j
+				max_match_length = e.length
+
+	if (max_match_length > 0)
+		return PreparePart() {
+			value = data[max_match_type_index].key[max_match_index],
+			type = data[max_match_type_index].type,
+			length = data[max_match_type_index].key[max_match_index].length,
+			index = max_match_index
+		}
+	else
+		return PreparePart() {
+			length = -1
+		}
+
+
+def next_real_match (input:string, data:array of MatchData, can_negative:bool):PreparePart
+	can_number:bool = false
+	is_decimal:bool = false
+	is_number:bool = false
+
+	if (can_negative && (input[0] == '-' || input[0] == '+'))
+		can_number = true
+	else if input[0].isdigit ()
+		can_number = true
+		is_number = true
+	else if input[0] == '.'
+		can_number = true
+		is_decimal = true
+
+	if can_number
+		var i = 0
+		while (++i <= input.length)
+			if input[i].isdigit ()
+				is_number = true
+			else if (!is_decimal && input[i] == '.')
+				is_decimal = true
 			else
-				is_decimal=true
-				continue
-		else if (data[i] == '-' or data[i] == '+') and (i==0) and (not is or data.length>1) and negative
-			continue
-		else
-			return false
+				if is_number
+					return PreparePart () {
+						value = input[0:i],
+						type = NUMBER,
+						length = i
+					}
+				else do break
 
-	return true
-
-def next_number(input:string, out pos:int?=null,neg:bool):string
-	last_pos:int=0
-	pos=-1
-	for var i=1 to input.length
-		if possible_number(input[0:i],neg,true)
-			last_pos=i
-		if (not possible_number(input[0:1],neg) or i==input.length)
-			pos=last_pos;
-			if i>0
-				return (input[0:last_pos])
-	return ""
+	return next_multi_match (input, data)
 
 
 def next_match(data:string, key:array of string, out index:int):string

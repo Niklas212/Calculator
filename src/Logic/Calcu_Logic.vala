@@ -19,10 +19,6 @@ public class Evaluation:GLib.Object
     {
         this.update(c);
         snd_evaluation = new Evaluation.secondary();
-        //test values TODO remove
-        //this.fun_extern.data[0] = new UserFuncData.with_data("p*x", {"x"});
-        //this.fun_extern.data[1] = new UserFuncData.with_data("sqrt(xx+yy)", {"x", "y"});
-        //this.fun_extern.data[2] = new UserFuncData.with_data("x+y+xy", {"x", "y"});
     }
 
     private Evaluation.secondary() {
@@ -45,11 +41,13 @@ public class Evaluation:GLib.Object
     }
 
     public void update(config c) {
-        fun_intern=get_intern_functions(c.use_degrees);
+        fun_intern = get_intern_functions(c.use_degrees);
         fun_extern = get_extern_functions(c.custom_functions);
-        operator=get_operator();
-        variable=get_custom_variable(c.custom_variable);
-        con=c;
+        operator = get_operator();
+        variable = get_custom_variable(c.custom_variable);
+        con = c;
+
+        update_match_data ();
     }
 
     public config con{get; set;}
@@ -67,12 +65,24 @@ public class Evaluation:GLib.Object
     public Func fun_intern{get; set; }
     public UserFunc fun_extern {get; set;}
 	public string[] control{get; set; default={"(", ")", ",", " "};}
-	public Replaceable variable{get; set;}
+    public Replaceable variable {get; set;}
+
+	private MatchData[] match_data = new MatchData[5];
 
     public void clear(){
         parts={};
         section.remove_range(0,section.length);
         sequence.remove_range(0,sequence.length);
+    }
+
+    public void update_match_data () {
+        match_data = {
+		    MatchData () {key = operator.key, type = OPERATOR},
+		    MatchData () {key = fun_intern.key, type = EXPRESSION},
+		    MatchData () {key = fun_extern.key, type = FUNCTION},
+		    MatchData () {key = control, type = CONTROL},
+		    MatchData () {key = variable.key, type = VARIABLE}
+		};
     }
 
     public PreparePart[] get_parts() {
@@ -92,45 +102,12 @@ public class Evaluation:GLib.Object
         bool can_negative=true;
         bool check_mul=false;
 
-		var num=PreparePart(){type=Type.NUMBER};
-		var opr=PreparePart(){type=Type.OPERATOR};
-		var cnt=PreparePart(){type=Type.CONTROL};
-		var vrb=PreparePart(){type=Type.VARIABLE};
-		var fui=PreparePart(){type=Type.EXPRESSION};
-		var fue=PreparePart(){type=Type.FUNCTION};
-		PreparePart ap={};
+		PreparePart ap = {};
 
-		int len_num;
+        int i = 0;
+		while (i < input.length) {
 
-		int ind_op=-1;
-		int ind_cnt=-1;
-		int ind_vrb=-1;
-		int ind_fui=-1;
-		int ind_fue=-1;
-
-		while(input.length>0) {
-
-			num.value=next_number(input,out len_num, can_negative);
-			opr.value=next_match(input,operator.key, out ind_op);
-			cnt.value=next_match(input,control, out ind_cnt);
-			vrb.value=next_match(input,variable.key, out ind_vrb);
-			fui.value=next_match(input,fun_intern.key, out ind_fui);
-			fue.value=next_match(input,fun_extern.key, out ind_fue);
-
-			opr.length=opr.value.length;
-			cnt.length=cnt.value.length;
-			vrb.length=vrb.value.length;
-			fui.length=fui.value.length;
-			fue.length=fue.value.length;
-			num.length=len_num;
-
-			opr.index=ind_op;
-			cnt.index=ind_cnt;
-			vrb.index=ind_vrb;
-            fui.index=ind_fui;
-            fue.index=ind_fue;
-
-			ap=get_longest(opr,num,cnt,vrb,fui,fue);
+            ap = next_real_match (input[i:input.length], match_data, can_negative);
 
 			if(ap.length>0)
 			    {
@@ -141,13 +118,13 @@ public class Evaluation:GLib.Object
                         parts += PreparePart(){value="0", type=Type.NUMBER};
 
 			        parts+=ap;
-			        input=input[ap.length:input.length];
+			        i += ap.length;
 
 			        can_negative=(ap.type==Type.OPERATOR||(ap.type==Type.CONTROL&&ap.value!=")"));
 			        check_mul=(ap.type==Type.NUMBER||ap.type==Type.VARIABLE||ap.value==")");
 			    }
 			else {
-			    throw new CALC_ERROR.INVALID_SYMBOL (@"the symbol `$(input[0:1])` is not known");
+			    throw new CALC_ERROR.INVALID_SYMBOL (@"the symbol `$(input[i:i+1])` is not known");
 			}
 
 		}
@@ -248,14 +225,9 @@ public class Evaluation:GLib.Object
 	public void eval() throws CALC_ERROR
 	{
 
-		//sortierung nach priority
-		//int64 msec = GLib.get_real_time();
 		sequence.sort(sorting);
-		//stdout.printf(@"__time:$( (GLib.get_real_time()-msec)/1000 )\n");
-		//index berechnung
-		//msec = GLib.get_real_time();
 		sequence=eval_seq(sequence);
-		//stdout.printf(@"__time:$( (GLib.get_real_time()-msec)/1000 )\n");
+
 
 
 		for(int i=0; i<sequence.length; i++)
@@ -300,14 +272,27 @@ public class Evaluation:GLib.Object
 	    }
 	}
 
-    public double eval_auto(string in, config? c=null) throws CALC_ERROR {
-        this.input=in;
-        if(c!=null)
+    public double eval_auto (string in, config? c = null) throws CALC_ERROR {
+        this.input = in;
+        if (c != null)
             this.update(c);
         try {
+            #if DEBUG
+            int64 msec0 = GLib.get_real_time();
+            #endif
             this.split();
+            #if DEBUG
+            int64 msec1 = GLib.get_real_time();
+            #endif
             this.prepare();
+            #if DEBUG
+            int64 msec2 = GLib.get_real_time();
+            #endif
             this.eval();
+            #if DEBUG
+            int64 msec3 = GLib.get_real_time();
+            print (@"times\t$(msec1 - msec0)\t$(msec2 - msec1)\t$(msec3 - msec2)\n");
+            #endif
         }
         catch(Error e) {
             this.clear();
@@ -317,19 +302,6 @@ public class Evaluation:GLib.Object
         return this.result;
     }
 
-	private PreparePart get_longest(PreparePart x,...)
-	{
-		var ret=x;
-		va_list list = va_list ();
-
-		for (PreparePart? y = list.arg<PreparePart?> (); y != null; y = list.arg<PreparePart?> ())
-		{
-			if(y.length>ret.length)
-				ret=y;
-		}
-
-		return ret;
-	}
 
 	// to genie <
 	CompareFunc<Sequence?> sorting = (a, b) => {
