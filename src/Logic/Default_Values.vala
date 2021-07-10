@@ -4,7 +4,7 @@ public Func get_intern_functions(bool i)
 {
     return (i)
     ? Func(){
-        key={"sqrt","sin","cos","tan","sinh","cosh","tanh","root","mod"},
+        key={"sqrt","sin","cos","tan","sinh","cosh","tanh","root","mod","sum", "mean"},
         eval={
             fun(){eval=(value)=>sqrt(value[0]), arg_left=0, arg_right=1},
             fun(){eval=(value)=>sin(value[0]*PI/180), arg_left=0, arg_right=1},
@@ -14,11 +14,13 @@ public Func get_intern_functions(bool i)
             fun(){eval=(value)=>cosh(value[0]*PI/180), arg_left=0, arg_right=1},
             fun(){eval=(value)=>tanh(value[0]*PI/180), arg_left=0, arg_right=1},
             fun(){eval=(value)=>pow(value[1],1/value[0]), arg_left=0, arg_right=2},
-            fun(){eval=(value)=>mod(value[0],value[1]), arg_left=0, arg_right=2}
+            fun(){eval=(value)=>mod(value[0],value[1]), arg_left=0, arg_right=2},
+            fun(2){eval=(value)=>sum(value), arg_left=0, arg_right=-1},
+            fun(1){eval=(value)=>mean(value), arg_left=0, arg_right=-1}
         }
     }
     : Func(){
-        key={"sqrt","sin","cos","tan","sinh","cosh","tanh","root","mod"},
+        key={"sqrt","sin","cos","tan","sinh","cosh","tanh","root","mod", "sum", "mean"},
         eval={
             fun(){eval=(value)=>sqrt(value[0]), arg_left=0, arg_right=1},
             fun(){eval=(value)=>sin(value[0]), arg_left=0, arg_right=1},
@@ -28,7 +30,9 @@ public Func get_intern_functions(bool i)
             fun(){eval=(value)=>cosh(value[0]), arg_left=0, arg_right=1},
             fun(){eval=(value)=>tanh(value[0]), arg_left=0, arg_right=1},
             fun(){eval=(value)=>pow(value[1],1/value[0]), arg_left=0, arg_right=2},
-            fun(){eval=(value)=>mod(value[0],value[1]), arg_left=0, arg_right=2}
+            fun(){eval=(value)=>mod(value[0],value[1]), arg_left=0, arg_right=2},
+            fun(2){eval=(value)=>sum(value), arg_left=0, arg_right=-1},
+            fun(1){eval=(value)=>mean(value), arg_left=0, arg_right=-1}
         }
     };
 }

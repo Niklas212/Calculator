@@ -8,6 +8,11 @@ class abstract Data: Object
 		get
 			return part
 
+
+enum Modifier
+	OPENING_BRACKET = 1
+
+
 enum Type
 	NUMBER
 	VARIABLE
@@ -96,10 +101,14 @@ struct UserFunc
 	data:array of UserFuncData
 
 struct Part
-	value:double?
-	eval:fun
-	has_value:bool
+	value: double?
+	eval: fun
+	has_value: bool
+	priority: uint
 	data: Data
+	modifier: Modifier
+	bracket_value: int
+	index: int
 
 struct Replaceable
 	key:array of string
@@ -159,18 +168,18 @@ struct fun
 	eval:Eval
 	arg_left:int
 	arg_right:int
+	min_arg_right:int
+
+	construct (min_arg_right:int = -1)
+		this.min_arg_right = min_arg_right
 
 
-struct Sequence
-	index: int
-	priority:int
-	arguments:int
 
 class UserFuncData: Data
 	part_index: array of int
 	argument_index: array of int
 	config: config
-	sequence: GenericArray of Sequence?
+	sequence: GenericArray of uint?
 	parts: GenericArray of Part?
 	evaluation: Calculation.Evaluation
 
@@ -260,17 +269,18 @@ def mod(a:double,b:double):double
 	ret:double=(d-dc)*b
 	return Math.round(ret*100000)/100000
 
-def eval_seq(data:GenericArray of Sequence?):GenericArray of Sequence?
-	for var i=0 to (data.length-2)
-		var arg=data.get(i).arguments
-		var num=data.get(i).index
-		for var c=i+1 to (data.length-1)
-			if num<data.get(c).index
-				var s=data.get(c)
-				s.index-=arg
-				data.set(c,s)
-	return data
+def sum (v:array of double): double
+	result:double = 0
+	for d in v
+		result += d
+	return result
 
+
+def mean (v:array of double): double
+	result:double = 0
+	for d in v
+		result += d
+	return result / v.length
 
 
 def next_multi_match (input:string, data:array of MatchData): PreparePart
@@ -335,20 +345,4 @@ def next_real_match (input:string, data:array of MatchData, can_negative:bool):P
 				else do break
 
 	return next_multi_match (input, data)
-
-
-def next_match(data:string, key:array of string, out index:int):string
-	max_match:string=""
-	ind:int=-1
-	counter:int=-1
-	for p in key
-		counter++
-		if p.length > data.length
-			continue
-		else if (p==(data[0:p.length]))
-			if p.length>max_match.length
-				max_match=p
-				ind=counter
-	index=ind
-	return max_match
 

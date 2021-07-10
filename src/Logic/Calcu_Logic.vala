@@ -29,9 +29,9 @@ public class Evaluation:GLib.Object
         this.update(c);
     }
 
-    public Evaluation.with_data(GenericArray<Part?> parts, GenericArray<Sequence?> seq) {
+    public Evaluation.with_data(GenericArray<Part?> parts, GenericArray<uint?> seq) {
         var _section = new GenericArray<Part?>();
-        var _sequence = new GenericArray<Sequence?>();
+        var _sequence = new GenericArray<uint?>();
 
         parts.foreach( (x) => _section.add(x) );
         seq.foreach( (x) => _sequence.add(x) );
@@ -56,7 +56,7 @@ public class Evaluation:GLib.Object
 	public string input{get; set; default="";}
 	public double? result{get; private set; default=null;}
 	private GenericArray<Part?> section=new GenericArray<Part?>();
-	private GenericArray<Sequence?>sequence=new GenericArray<Sequence?>();
+	public GenericArray <uint?> sequence = new GenericArray <uint?> ();
 
 	public int bracket{get; set; default=5;}
 
@@ -72,7 +72,7 @@ public class Evaluation:GLib.Object
     public void clear(){
         parts={};
         section.remove_range(0,section.length);
-        sequence.remove_range(0,sequence.length);
+        sequence.remove_range (0, sequence.length);
     }
 
     public void update_match_data () {
@@ -93,7 +93,7 @@ public class Evaluation:GLib.Object
         return this.section;
     }
 
-    public GenericArray<Sequence?> get_sequence() {
+    public GenericArray<uint?> get_sequence() {
         return this.sequence;
     }
 
@@ -133,71 +133,71 @@ public class Evaluation:GLib.Object
 	public void prepare() throws CALC_ERROR
 	{
 		int bracket_value = 0;
+		int invisible_parts = 0;
 
-		foreach(PreparePart part in parts)
+		foreach (PreparePart part in parts)
 		{
-
-			switch(part.type)
+			switch (part.type)
 			{
 				case Type.VARIABLE: {
-					section.add(Part(){
-						value=variable.value[part.index],
+					section.add (Part () {
+						value = variable.value[part.index],
 						has_value = true
 					});
 
 					break;
 				}
 				case Type.NUMBER: {
-					section.add(Part() {
-						value=double.parse(part.value),
+					section.add (Part () {
+						value = double.parse (part.value),
 						has_value = true
 					});
 
 					break;
 				}
 				case Type.OPERATOR: {
-					section.add(Part(){
-						eval=operator.eval[part.index]
+					section.add (Part () {
+					    index = section.length + invisible_parts,
+						eval = operator.eval[part.index],
+						priority = bracket_value + operator.priority[part.index]
 					});
-					sequence.add(Sequence(){
-						priority=bracket_value+operator.priority[part.index],
-						arguments=operator.eval[part.index].arg_left+operator.eval[part.index].arg_right,
-						index=section.length-1
-					});
+					sequence.add (bracket_value + operator.priority[part.index]);
 
 					break;
 				}
 				case Type.EXPRESSION: {
-				    section.add(Part(){
-				        eval=fun_intern.eval[part.index]
+				    section.add (Part () {
+				        index = section.length + invisible_parts,
+				        eval = fun_intern.eval[part.index],
+				        priority = 4 + bracket_value
 				    });
-				    sequence.add(Sequence(){
-				        priority=4+bracket_value,
-				        arguments=fun_intern.eval[part.index].arg_right,
-				        index=section.length-1
-				    });
-
+                    sequence.add (bracket_value + 4);
 				    break;
 				}
 				case Type.FUNCTION: {
-				    section.add(Part(){
+				    section.add (Part () {
+				        index = section.length + invisible_parts,
+				        priority = 4 + bracket_value,
 				        eval = fun(){eval = fun_extern.eval, arg_right = fun_extern.arg_right[part.index]},
 				        data  = (fun_extern.data[part.index]).with_evaluation(snd_evaluation)
 				    });
 				    //TODO pass config
-				    sequence.add(Sequence(){
-				        priority = 4 + bracket_value,
-				        arguments = fun_extern.arg_right[part.index],
-				        index = section.length - 1
-				    });
+				    sequence.add (bracket_value + 4);
 				    break;
 				}
 				case Type.CONTROL: {
-					if(part.value==")") {
-					    bracket_value-=bracket;
+				    invisible_parts ++;
+					if (part.value == ")") {
+					    bracket_value -= bracket;
+					    if (section.length >= 1)
+					        section.get (section.length - 1).bracket_value --;
 					}
-					else if(part.value=="(") {
-					    bracket_value+=bracket;
+					else if (part.value == "(") {
+					    bracket_value += bracket;
+                        if (section.length >= 1) {
+					        section.get (section.length - 1).bracket_value ++;
+					        section.get (section.length - 1).modifier = OPENING_BRACKET;
+					    }
 					}
 					break;
 				}
@@ -225,57 +225,84 @@ public class Evaluation:GLib.Object
 	public void eval() throws CALC_ERROR
 	{
 
-		sequence.sort(sorting);
-		sequence=eval_seq(sequence);
+        sequence.sort ( (a, b) => (int) (a < b) );
 
 
-
-		for(int i=0; i<sequence.length; i++)
+		for (int i = 0; i < sequence.length; i++)
 		{
-			var ind=sequence.get(i).index;
-			var part=section.get(ind);
+			var ind = -1;
 
-			double[]arg={};
+			for (int j = 0; j < section.length; j++)
+			    if (section.get(j).has_value == false && section.get(j).priority == sequence.get(i)) {
+			        ind = j;
+			        break;
+			    }
+
+			var part = section.get (ind);
+
+			var bracket_scope = 0;
+			var check_scope = false;
+			if ( (part.eval.arg_right >= 1 || part.eval.arg_right == -1) ) {
+			    check_scope = true;
+			    bracket_scope = part.bracket_value;
+
+			    if (! (part.modifier == OPENING_BRACKET)) {
+			        bracket_scope ++;
+			    }
+			    //bracket_scope += (int) (OPENING_BRACKET in part.modifier);
+			}
+
+			double[] arg = {};
 
 			//get arg_left
-			for(int l=0; l<part.eval.arg_left; l++)
+			if (part.eval.arg_left > 0)
 			{
-			    if ( (ind - part.eval.arg_left) >= 0 && section.get(ind - part.eval.arg_left).has_value) {
-				    arg+=section.get(ind-part.eval.arg_left).value;
-				    section.remove_index(ind-part.eval.arg_left);
+			    if ( (ind - 1) >= 0 && section.get (ind - 1).has_value) {
+				    arg += section.get (ind - 1).value;
+				    section.remove_index (ind - 1);
 				}
 				else throw new CALC_ERROR.MISSING_ARGUMENT(@"Missing Argument, '$(parts[ind].value)' requires a left argument");
 			}
 
 			//get arg_right
-			for(int l=0; l<part.eval.arg_right; l++)
+			int l = 0;
+			while (l < part.eval.arg_right || part.eval.arg_right == -1)
 			{
-			    if ( (ind + 1 - part.eval.arg_left) < section.length && section.get(ind + 1 - part.eval.arg_left).has_value) {
-				    arg+=section.get(ind+1-part.eval.arg_left).value;
-				    section.remove_index(ind+1-part.eval.arg_left);
+			    l ++;
+			    if ( (ind + 1 - part.eval.arg_left) < section.length && section.get (ind + 1 - part.eval.arg_left).has_value && !(check_scope && bracket_scope <= 0) ) {
+				    arg += section.get (ind + 1 - part.eval.arg_left).value;
+				    bracket_scope += section.get (ind + 1 - part.eval.arg_left).bracket_value;
+				    section.remove_index (ind + 1 - part.eval.arg_left);
 				}
-				else throw new CALC_ERROR.MISSING_ARGUMENT(@"Missing Argument, '$(parts[ind].value)' requires $(part.eval.arg_right) right $( (part.eval.arg_right > 1) ? "arguments" : "argument"  )");
+				else if (part.eval.min_arg_right != -1 && l > part.eval.min_arg_right) {
+				    break;
+				}
+				else {
+				    var arg_right = (part.eval.min_arg_right > 0) ? part.eval.min_arg_right : part.eval.arg_right;
+				    var no_max = part.eval.min_arg_right > 0;
+				    var key = parts[part.index].value;
+				    throw new CALC_ERROR.MISSING_ARGUMENT(@"Missing Argument, '$key' requires $( (no_max) ? "at least " : "" )$(arg_right) right $( (arg_right > 1) ? "arguments" : "argument"  )");
+			    }
 			}
 
-			section.set(ind-part.eval.arg_left,Part(){
-				value=part.eval.eval(arg, part.data),
-				has_value = true
+			section.set (ind - part.eval.arg_left, Part() {
+				value = part.eval.eval(arg, part.data),
+				has_value = true,
+				bracket_value = bracket_scope
 			});
 		}
 		if (section.length > 1)
 		    throw new CALC_ERROR.REMAINING_ARGUMENT(@"$(section.length - 1) $( (section.length > 2) ? "arguments are" : "argument is" ) remaining");
-		result=section.get(0).value??null;
-		//s_result=result.to_string();
-		if(con.round_decimal) {
+		result = section.get(0).value ?? 0 / 0;
+		if (con.round_decimal) {
 		    result=round(result*pow(10,con.decimal_digit))/pow(10,con.decimal_digit);
-		    //s_result=result.to_string();
 	    }
 	}
 
     public double eval_auto (string in, config? c = null) throws CALC_ERROR {
         this.input = in;
         if (c != null)
-            this.update(c);
+            this.update (c);
         try {
             #if DEBUG
             int64 msec0 = GLib.get_real_time();
@@ -302,12 +329,6 @@ public class Evaluation:GLib.Object
         return this.result;
     }
 
-
-	// to genie <
-	CompareFunc<Sequence?> sorting = (a, b) => {
-		return (int) (a.priority < b.priority) - (int) (a.priority > b.priority);
-	};
-	// >
     public static  Eval fun_extern_eval = (value, data) =>{
                     var func_data = data as UserFuncData;
 
