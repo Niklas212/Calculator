@@ -126,4 +126,14 @@ def wrap (value:int, min:int, max:int):int
 		return min
 	else do return value
 
+def next_zoom_value (value:int): int
+	if (value == 1)
+		return value
+	if (value % 5 == 0)
+		return value
+	if (value % 2 == 0)
+		if (value % 4 != 0 && value % 6 != 0 && value % 8 != 0)
+			return value
+	return next_zoom_value (value - 1)
+
 	
