@@ -10,16 +10,15 @@ public class FunctionGraph : DrawingArea {
         // relativ to lines
         private double data_start = 0;
         private double data_end = 0;
-        private bool calculating_required = false;
 
-        private int steps_per_size = 10;
-        private int pixels_per_step = 4;
+        private int pixels_per_step = 1;
         private int amount_of_steps = 0;
         private double[] values;
-        private int SIZE = 40;
-        private int size = 40;
+        private const int SIZE = 50;
+        private int size = 50;
         private float zoom_factor = 1;
         private double size_value = 1;
+        private const float min_zoom = (float) 0.05;
 
         private int shift_x;
         private int shift_y;
@@ -29,8 +28,6 @@ public class FunctionGraph : DrawingArea {
         private int drag_start_y;
 
         public signal void request_data(double start, double end, int steps, ref double[] _array, int array_start = 0);
-        //public signal double request_single_data (double x);
-
 
         public FunctionGraph () {
 
@@ -85,9 +82,8 @@ public class FunctionGraph : DrawingArea {
             int required_steps = (pixel_end - pixel_start) / pixels_per_step + 1;
 
             int new_amount_of_steps = required_steps;
-            if ( (! (new_amount_of_steps == amount_of_steps && new_data_start == data_start)) || calculating_required) {
+            if ( (! (new_amount_of_steps == amount_of_steps && new_data_start == data_start))) {
 
-                calculating_required = false;
                 values.resize (new_amount_of_steps);
 
 
@@ -213,13 +209,12 @@ public class FunctionGraph : DrawingArea {
         }
 
         public void zoom (float value) {
-            zoom_factor += value;
+            zoom_factor *= value + 1;
 
-            if (zoom_factor < 0.1)
-                zoom_factor = (float) 0.1;
+            if (zoom_factor < min_zoom)
+                zoom_factor = min_zoom;
 
             // force redraw
-            calculating_required = true;
             queue_draw ();
         }
 
