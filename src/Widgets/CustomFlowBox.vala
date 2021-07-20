@@ -257,10 +257,10 @@ public class CustomFlowBox : FlowBox {
                     Evaluation.get_data_range (data, start, end, steps, ref values, array_start);
                 });
 
-                var btn_zoom_in = new Button.with_label ("-");
+                var btn_zoom_in = new Button.with_label ("+");
                 btn_zoom_in.clicked.connect ( function_graph.default_zoom_in );
 
-                var btn_zoom_out = new Button.with_label ("+");
+                var btn_zoom_out = new Button.with_label ("-");
                 btn_zoom_out.clicked.connect ( function_graph.default_zoom_out );
 
                 var zoom_box = new Box (HORIZONTAL, 4);
@@ -277,9 +277,8 @@ public class CustomFlowBox : FlowBox {
                 var window = new Window();
                     window.title = description;
                     window.add (overlay);
-                    //window.destroy.connect (Gtk.main_quit);
                     window.show_all ();
-            });
+                });
 
         if (con.custom_functions.arg_right [get_string_position (con.custom_functions.key, key)] != 1) {
             graphics_btn.sensitive = false;

@@ -36,7 +36,8 @@ public class FunctionGraph : DrawingArea {
 
             add_events (Gdk.EventMask.BUTTON_PRESS_MASK
                       | Gdk.EventMask.BUTTON_RELEASE_MASK
-                      | Gdk.EventMask.POINTER_MOTION_MASK);
+                      | Gdk.EventMask.POINTER_MOTION_MASK
+                      | Gdk.EventMask.SCROLL_MASK);
 
             set_size_request (400, 300);
 
@@ -203,11 +204,11 @@ public class FunctionGraph : DrawingArea {
             return false;
         }
 
-        public void default_zoom_in () {
+        public void default_zoom_out () {
             zoom ( (float) 0.1 * -1);
         }
 
-        public void default_zoom_out () {
+        public void default_zoom_in () {
             zoom ( (float) 0.1);
         }
 
@@ -240,9 +241,18 @@ public class FunctionGraph : DrawingArea {
                 shift_x = (int) event.x - drag_start_x;
                 shift_y = (int) event.y - drag_start_y;
                 queue_draw ();
-                //print (@"$shift_x  $shift_y\n");
             }
             return false;
         }
+
+        public override bool scroll_event (Gdk.EventScroll event) {
+
+            if (event.direction == UP)
+                default_zoom_in ();
+            else if (event.direction == DOWN)
+                default_zoom_out ();
+            return false;
+        }
+
 
     }
