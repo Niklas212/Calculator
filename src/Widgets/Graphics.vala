@@ -158,7 +158,7 @@ public class FunctionGraph : DrawingArea {
 
             for (int i = v_data_start; i <= v_data_end; i ++) {
                 cr.move_to (position_x, height / 2 + i * size - 5 + shift_y);
-                cr.show_text (@"$(i * size_value)");
+                cr.show_text (@"$(-i * size_value)");
             }
 
 
