@@ -1,6 +1,15 @@
 # Calculator
 this is a simple Calculator written in Gtk and Vala/Genie
-![Calculator](https://user-images.githubusercontent.com/76533424/105609872-6ed2d100-5dac-11eb-85f0-a635f22bf657.png)
+
+![Calculator](https://github.com/Niklas212/niklas212.github.io/blob/master/res/Calculator/Calculator_new.png)
+
+![Graph](https://github.com/Niklas212/niklas212.github.io/blob/master/res/Calculator/Graph_new.png)
+
+### Features
+* perform arithmetic calculations
+* define variables and functions
+* display functions graphically
+
 ### Installation
 **This works only on Linux**
 #### Dependencies
@@ -10,6 +19,6 @@ this is a simple Calculator written in Gtk and Vala/Genie
 - a c compiler
 1. clone this repository
 2. change the directory to this folder
-3. create a build folder: ```meson build --prefix=/usr``` in the terminal
+3. create a build folder: ```meson build --prefix=/usr``` (in the terminal)
 4. change the directory to the created build folder: ```cd build```
 5. install: ```sudo ninja install ```
