@@ -19,6 +19,6 @@ this is a simple Calculator written in Gtk and Vala/Genie
 - a c compiler
 1. clone this repository
 2. change the directory to this folder
-3. create a build folder: ```meson build --prefix=/usr``` (in the terminal)
+3. create a build folder: ```meson build --prefix=/usr``` (type the command in the terminal)
 4. change the directory to the created build folder: ```cd build```
 5. install: ```sudo ninja install ```
