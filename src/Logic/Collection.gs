@@ -239,9 +239,8 @@ class UserFuncData: Data
 
 		//test generated data
 		if test
-			var test_e = new Calculation.Evaluation.with_data(e.get_section(), e.get_sequence())
 			try
-				test_e.eval()
+				e.eval()
 			except er: Calculation.CALC_ERROR
 				er.message = "incorrect expression: " + er.message
 				raise er
