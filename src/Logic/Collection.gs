@@ -181,11 +181,6 @@ class UserFuncData: Data
 	config: config
 	sequence: GenericArray of uint?
 	parts: GenericArray of Part?
-	evaluation: Calculation.Evaluation
-
-	def with_evaluation(eval:Calculation.Evaluation): UserFuncData
-		this.evaluation = eval
-		return this
 
 	construct with_data(expression:string, variables: array of string) raises Calculation.CALC_ERROR
 		try
@@ -240,7 +235,9 @@ class UserFuncData: Data
 		//test generated data
 		if test
 			try
-				e.eval()
+				var test_e = new Calculation.Evaluation.with_data (e.get_section (), e.get_sequence ())
+				test_e.set_parts (e.get_parts ())
+				test_e.eval()
 			except er: Calculation.CALC_ERROR
 				er.message = "incorrect expression: " + er.message
 				raise er

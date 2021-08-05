@@ -18,13 +18,9 @@ public class Evaluation:GLib.Object
     public Evaluation(config c=config(){use_degrees=true})
     {
         this.update(c);
-        snd_evaluation = new Evaluation.secondary();
     }
 
-    private Evaluation.secondary() {
-
-    }
-
+    //TODO remove later
     public Evaluation.small(config c = config(){use_degrees = true}) {
         this.update(c);
     }
@@ -51,11 +47,10 @@ public class Evaluation:GLib.Object
     }
 
     public config con{get; set;}
-    public Evaluation? snd_evaluation = null;
 	private PreparePart[] parts={};
 	public string input{get; set; default="";}
 	public double? result{get; private set; default=null;}
-	private GenericArray<Part?> section=new GenericArray<Part?>();
+	private GenericArray<Part?> section = new GenericArray<Part?>();
 	public GenericArray <uint?> sequence = new GenericArray <uint?> ();
 
 	public int bracket{get; set; default=5;}
@@ -95,6 +90,10 @@ public class Evaluation:GLib.Object
 
     public GenericArray<uint?> get_sequence() {
         return this.sequence;
+    }
+
+    public void set_parts (PreparePart[] parts) {
+        this.parts = parts;
     }
 
 	public void split() throws CALC_ERROR
@@ -178,8 +177,8 @@ public class Evaluation:GLib.Object
 				    section.add (Part () {
 				        index = section.length + invisible_parts,
 				        priority = 4 + bracket_value,
-				        eval = fun(){eval = fun_extern.eval, arg_right = fun_extern.arg_right[part.index]},
-				        data  = (fun_extern.data[part.index]).with_evaluation(snd_evaluation)
+				        eval = fun(){eval = fun_extern_eval, arg_right = fun_extern.arg_right[part.index]},
+				        data  = (fun_extern.data[part.index])
 				    });
 				    //TODO pass config
 				    sequence.add (bracket_value + 4);
@@ -291,6 +290,7 @@ public class Evaluation:GLib.Object
 				bracket_value = bracket_scope
 			});
 		}
+
 		if (section.length > 1)
 		    throw new CALC_ERROR.REMAINING_ARGUMENT(@"$(section.length - 1) $( (section.length > 2) ? "arguments are" : "argument is" ) remaining");
 		result = section.get(0).value ?? 0 / 0;
@@ -329,26 +329,84 @@ public class Evaluation:GLib.Object
         return this.result;
     }
 
-    public static  Eval fun_extern_eval = (value, data) =>{
-                    var func_data = data as UserFuncData;
+    public static double eval_trusted_function (double[] value, UserFuncData data) {
 
-                    for (int i = 0; i < func_data.parts.length; i++)
-                        func_data.evaluation.section.add(func_data.parts[i]);
-                    for (int i = 0; i < func_data.sequence.length; i++)
-                        func_data.evaluation.sequence.add(func_data.sequence[i]);
+        var sequence = new GenericArray <uint?> (data.parts.length);
+        var section = new GenericArray <Part?> (data.sequence.length);
 
-                    // causes "g_object_ref: assertion 'G_IS_OBJECT (object)' failed"
-                    //func_data.parts.foreach((part) => func_data.evaluation.section.add(part));
-                    //func_data.sequence.foreach((seq) => func_data.evaluation.sequence.add(seq));
+        data.parts.foreach ((part) => section.add (part));
+        data.sequence.foreach ((seq) => sequence.add (seq));
 
-                    for (int i = 0; i < func_data.part_index.length; i++) {
-                        func_data.evaluation.section[func_data.part_index[i]].value = value[func_data.argument_index[i]];
-                    }
+        // set parameters
+        for (int i = 0; i < data.part_index.length; i++) {
+            section[data.part_index[i]].value = value[data.argument_index[i]];
+        }
 
-                    func_data.evaluation.eval();
-                    func_data.evaluation.clear();
-                    return func_data.evaluation.result ?? 0 / 0;
-            };
+        sequence.sort ( (a, b) => (int) (a < b) );
+
+		for (int i = 0; i < sequence.length; i++)
+		{
+			var ind = -1;
+
+			for (int j = 0; j < section.length; j++)
+			    if (section.get(j).has_value == false && section.get(j).priority == sequence.get(i)) {
+			        ind = j;
+			        break;
+			    }
+
+			var part = section.get (ind);
+
+			var bracket_scope = 0;
+			var check_scope = false;
+			if ( (part.eval.arg_right >= 1 || part.eval.arg_right == -1) ) {
+			    check_scope = true;
+			    bracket_scope = part.bracket_value;
+
+			    if (! (part.modifier == OPENING_BRACKET)) {
+			        bracket_scope ++;
+			    }
+			}
+
+			double[] arg = {};
+
+			//get arg_left
+			if (part.eval.arg_left > 0)
+			{
+				    arg += section.get (ind - 1).value;
+				    section.remove_index (ind - 1);
+			}
+
+			//get arg_right
+			int l = 0;
+			while (l < part.eval.arg_right || part.eval.arg_right == -1)
+			{
+			    l ++;
+			    if ( !(check_scope && bracket_scope <= 0) ) {
+				    arg += section.get (ind + 1 - part.eval.arg_left).value;
+				    bracket_scope += section.get (ind + 1 - part.eval.arg_left).bracket_value;
+				    section.remove_index (ind + 1 - part.eval.arg_left);
+				}
+				else {
+				    break;
+				}
+			}
+
+			section.set (ind - part.eval.arg_left, Part() {
+				value = part.eval.eval(arg, part.data),
+				has_value = true,
+				bracket_value = bracket_scope
+			});
+		}
+		return section.get (0).value;
+    }
+
+
+    public static Eval fun_extern_eval = (value, data) => {
+        var func_data = data as UserFuncData;
+
+        return eval_trusted_function (value, func_data);
+    };
+
 
     public static void get_data_range (UserFuncData data, double start, double end, int amount_of_steps, ref double[] values, int array_start ) {
 

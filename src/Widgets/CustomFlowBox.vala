@@ -250,7 +250,7 @@ public class CustomFlowBox : FlowBox {
                 int data_position = get_string_position (con.custom_functions.key, key);
 
                 var evaluation = new Evaluation.small (*con);
-                var data = con.custom_functions.data[data_position].with_evaluation (evaluation);
+                var data = con.custom_functions.data[data_position];
 
 
                 function_graph.request_data.connect ( (start, end, steps, ref values, array_start) => {
