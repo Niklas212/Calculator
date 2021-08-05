@@ -16,9 +16,9 @@ public class FunctionGraph : DrawingArea {
         private double[] values;
         private const int SIZE = 50;
         private int size = 50;
-        private float zoom_factor = 1;
+        private double zoom_factor = 1;
         private double size_value = 1;
-        private const float min_zoom = (float) 0.05;
+        private const double min_zoom = (float) 0.049;
 
         private int shift_x;
         private int shift_y;
@@ -49,27 +49,27 @@ public class FunctionGraph : DrawingArea {
             var width = get_allocated_width ();
             var height = get_allocated_height ();
 
-            size = (int) (SIZE * zoom_factor);
+            double v_size = (SIZE * zoom_factor);
 
 
             if (zoom_factor < 1) {
-                int x = SIZE / size;
+                int x = 0;
 
-                x = next_zoom_value (x);
+                x = next_zoom_value ((double) SIZE / (double) v_size);
 
                 size_value = x;
-                size *= x;
+                size = (int) (v_size * x);
 
-                print (@"zoom:$zoom_factor\t$x\n");
+                //print (@"zoom:$zoom_factor\t$x\n");
             } else {
-                int x = size / SIZE;
+                int x = 0;
 
-                x = next_zoom_value (x);
+                x = next_zoom_value ((double) v_size / (double) SIZE);
 
                 size_value = 1.0 / x;
-                size /= x;
+                size = (int) (v_size / x);
 
-                print (@"zoom:$zoom_factor\t$x\t$size_value\n");
+                //print (@"zoom:$zoom_factor\t$x\t$size_value\n");
             }
 
 
@@ -90,7 +90,7 @@ public class FunctionGraph : DrawingArea {
                 int64 msec = GLib.get_real_time ();
                 request_data (new_data_start, new_data_end, new_amount_of_steps, ref values, 0);
                 int64 msec2 = GLib.get_real_time ();
-                print (@"$new_amount_of_steps -> $(msec2 - msec) [$data_start -> $data_end]\n");
+                //print (@"$new_amount_of_steps -> $(msec2 - msec) [$data_start -> $data_end]\n");
                 data_start = new_data_start;
                 data_end = new_data_end;
                 amount_of_steps = new_amount_of_steps;
@@ -142,11 +142,11 @@ public class FunctionGraph : DrawingArea {
             int h_data_start = pixel_start / size;
             int h_data_end = pixel_end / size;
 
-            int position_y = wrap (height / 2 + 10 + shift_y, 15, height - 10);
+            int position_y = wrap (height / 2 + 15 + shift_y, 15, height - 10);
 
             for (int i = h_data_start; i <= h_data_end; i ++) {
                 cr.move_to (i * size + 5 + shift_x + width / 2, position_y);
-                cr.show_text (@"$(i * size_value)");
+                cr.show_text (get_graph_number_text (i * size_value));
             }
 
             //vertical values
@@ -158,7 +158,7 @@ public class FunctionGraph : DrawingArea {
 
             for (int i = v_data_start; i <= v_data_end; i ++) {
                 cr.move_to (position_x, height / 2 + i * size - 5 + shift_y);
-                cr.show_text (@"$(-i * size_value)");
+                cr.show_text (get_graph_number_text (-i * size_value));
             }
 
 
@@ -201,18 +201,39 @@ public class FunctionGraph : DrawingArea {
         }
 
         public void default_zoom_out () {
-            zoom ( (float) 0.1 * -1);
+            zoom (0.1 * -1, -1, -1);
         }
 
         public void default_zoom_in () {
-            zoom ( (float) 0.1);
+            zoom ( 0.1, -1, -1);
         }
 
-        public void zoom (float value) {
+        public void zoom_out (double x = -1, double y = -1) {
+            zoom (0.1 * -1, x, y);
+        }
+
+        public void zoom_in (double x = -1, double y = -1) {
+            zoom (0.1, x, y);
+        }
+
+        public void zoom (double value, double x, double y) {
+
+            double old_zoom_factor = zoom_factor;
+            int width = get_allocated_width ();
+            int height = get_allocated_height ();
+
             zoom_factor *= value + 1;
 
             if (zoom_factor < min_zoom)
                 zoom_factor = min_zoom;
+
+            //check if x, y is in widget
+            if (x > 0 && y > 0 && x < width && y < height) {
+
+                shift_x += (int) ( (x - (width / 2)) * (old_zoom_factor - zoom_factor) );
+                shift_y += (int) ( (y - (height / 2)) * (old_zoom_factor - zoom_factor) );
+                print (@"[$width | $height]\t[$x | $y]\t$old_zoom_factor -> $zoom_factor\n=> [$shift_x | $shift_y]\n");
+            }
 
             // force redraw
             queue_draw ();
@@ -243,9 +264,11 @@ public class FunctionGraph : DrawingArea {
         public override bool scroll_event (Gdk.EventScroll event) {
 
             if (event.direction == UP)
-                default_zoom_in ();
+                //zoom_in (event.x, event.y);
+                zoom_in (-1, -1);
             else if (event.direction == DOWN)
-                default_zoom_out ();
+                //zoom_out (event.x, event.y);
+                zoom_out (-1, -1);
             return false;
         }
 

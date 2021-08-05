@@ -1,3 +1,5 @@
+uses GLib.Math
+
 struct PopInfo
 	show:bool
 	custom_text:bool
@@ -126,14 +128,38 @@ def wrap (value:int, min:int, max:int):int
 		return min
 	else do return value
 
-def next_zoom_value (value:int): int
-	if (value == 1)
-		return value
-	if (value % 5 == 0)
-		return value
-	if (value % 2 == 0)
-		if (value % 4 != 0 && value % 6 != 0 && value % 8 != 0)
-			return value
-	return next_zoom_value (value - 1)
+def next_zoom_value (value: double): int
+	l: double
+	n: int
+
+	l = log10 (value)
+	n = (int) floor (l)
+
+
+	r: double = value / pow (10, n)
+
+	if r >= 5
+		return 5 * (int) pow (10, n)
+	else if r >= 2
+		return 2 * (int) pow (10, n)
+	else
+		return 1 * (int) pow (10, n)
+
+
+def get_graph_number_text (value: double): string
+	var ret = value.to_string ()
+
+	if (ret.contains (".") && ret.contains ("0"))
+		var valid = false
+		for var i = 0 to (ret.length - 1)
+			if ret[i] == '0'
+				if valid
+					return ret[0:i + 1]
+			else if ret[i].isdigit ()
+				valid = true
+	else
+		return ret
+
+	return ret
 
 	

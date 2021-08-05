@@ -56,7 +56,6 @@ protected override void activate()
 	        custom_variable = varis,
 	        custom_functions = funs
 	        };
-
     var evaluation = new Evaluation(con);
 
     //TODO automatically save vars and funs on changed
