@@ -35,48 +35,5 @@ using Gtk;
         return stor;
     }
 
-    public Widget var_entry(string key,string value,Entry ent) {
-        var e=calc_button(key,true,ent,PopInfo(){show=true, definition=value});
-        e.halign=START;
-
-        return e;
-    }
-
-    public class VarEntry{
-    public signal void remove_clicked(string akey);
-
-    public Widget show(string key, string value, Entry ent) {
-        var svalue=value.replace("e","E");
-
-        var widget=var_entry(key, svalue, ent);
-
-        widget.button_press_event.connect((event)=>{
-            if(event.type == BUTTON_PRESS && event.button == 3) {
-                var pop=new Popover(widget);
-                //pop.margin=8;
-
-        var remove=new Button.with_label("remove");
-
-            remove.clicked.connect(()=>{
-
-                remove_clicked(key);
-            });
-
-        var pop_box=new Box(VERTICAL,8);
-            pop_box.pack_start((new Label(@"$key ($svalue)")));
-            pop_box.pack_start(remove);
-            pop_box.margin=4;
-            pop_box.show_all();
-
-        pop.add(pop_box);
-        pop.show_all();
-            }
-            return false;
-        });
-        return widget;
-    }
-    }
-
-
 }
 
